@@ -1,12 +1,25 @@
-import { CursoEnum } from 'src/features/dominios/enum/curso.enum';
+import { CursoEnum } from 'src/features/usuario/enum/curso.enum';
 import { StatusEnum } from 'src/features/dominios/enum/status.enum';
-import { TurnoEnum } from 'src/features/dominios/enum/turno.enum';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { TurnoEnum } from 'src/features/usuario/enum/turno.enum';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { FlagRegistroEnum } from 'src/features/dominios/enum/flag-registro.enum';
+import { TipoGestorEnum } from '../enum/tipo-gestor.enum';
+import { Perfil } from 'src/features/dominios/entities/perfil.entity';
 
 @Entity({ name: 'usuario' })
 export class Usuario {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @ManyToOne(() => Perfil)
+  @JoinColumn({ name: 'Identificador do Perfil' })
+  perfil: Perfil;
 
   @Column({ name: 'Identificador do Perfil', nullable: false })
   idPerfil: number;
@@ -28,6 +41,12 @@ export class Usuario {
 
   @Column({ name: 'Curso do aluno', nullable: true })
   curso: CursoEnum;
+
+  @Column({ name: 'Gestor', nullable: true })
+  gestor: FlagRegistroEnum;
+
+  @Column({ name: 'Tipo de Gestor', nullable: true })
+  tipoGestor: TipoGestorEnum;
 
   @Column({ name: 'Status do Registro', nullable: false })
   status: StatusEnum;

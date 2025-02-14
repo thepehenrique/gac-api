@@ -8,11 +8,14 @@ import {
   ParseIntPipe,
   Delete,
   Put,
+  Query,
 } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { Usuario } from '../entities/usuario.entity';
 import { UsuarioService } from '../services/usuario.service';
 import { UsuarioDto } from '../dtos/usuario.dto';
+import { FiltroUsuarioDto } from '../dtos/filtro-usuario.dto';
+import { PaginationQueryResponseDto } from 'src/commom/dto/pagination-query-response.dto';
 import { AtualizarUsuarioDto } from '../dtos/atualizar-usuario.dto';
 
 @ApiTags('Usuario')
@@ -31,7 +34,8 @@ export class UsuarioController {
   })
   @Post()
   async save(@Body() body: UsuarioDto): Promise<number> {
-    return this.service.save(body);
+    const userId = await this.service.save(body);
+    return userId;
   }
 
   @ApiResponse({
@@ -89,8 +93,9 @@ export class UsuarioController {
     status: HttpStatus.NOT_FOUND,
   })
   @Get()
-  async getAll() // @Query() filtros: ,
-  : Promise<Usuario[]> {
-    return this.service.getAll();
+  async getAll(
+    @Query() filtros: FiltroUsuarioDto,
+  ): Promise<PaginationQueryResponseDto<Usuario>> {
+    return this.service.getAll(filtros);
   }
 }

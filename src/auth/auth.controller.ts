@@ -1,8 +1,8 @@
-import { Controller, Get, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, UseGuards, Req, Res } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { GoogleOAuthGuard } from './guards/google-oauth.guard';
 import { AuthService } from './auth.service';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -19,7 +19,7 @@ export class AuthController {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async googleAuth(@Req() req: Request) {}
 
-  @ApiOperation({ summary: 'Redireciona após login com Google OAuth' })
+  /* @ApiOperation({ summary: 'Redireciona após login com Google OAuth' })
   @ApiResponse({
     status: 200,
     description: 'Retorna informações do usuário autenticado.',
@@ -28,5 +28,14 @@ export class AuthController {
   @UseGuards(GoogleOAuthGuard)
   async googleAuthRedirect(@Req() req: Request) {
     return this.authService.googleLogin(req);
+  } */
+
+  @Get('google/redirect')
+  @UseGuards(GoogleOAuthGuard)
+  async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
+    const user = await this.authService.googleLogin(req);
+    res.redirect(
+      `http://localhost:4200?user=${encodeURIComponent(JSON.stringify(user))}`,
+    );
   }
 }

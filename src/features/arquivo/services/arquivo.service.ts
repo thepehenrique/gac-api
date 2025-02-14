@@ -7,6 +7,8 @@ import { ArquivoRepository } from '../repository/arquivo.repository';
 import { DataSource } from 'typeorm';
 import { ArquivoDto } from '../dtos/arquivo.dto';
 import { Arquivo } from '../entities/arquivo.entity';
+import { FiltroArquivoDto } from '../dtos/filtro-arquivo.dto';
+import { PaginationQueryResponseDto } from 'src/commom/dto/pagination-query-response.dto';
 
 @Injectable()
 export class ArquivoService {
@@ -16,22 +18,22 @@ export class ArquivoService {
     this.repository = new ArquivoRepository(this.dataSource.manager);
   }
 
-  async save(bodyDto: ArquivoDto): Promise<number> {
+  async save(idUsuario: number, bodyDto: ArquivoDto): Promise<number> {
     const data = new Date();
     const UsuarioEntity = new Arquivo();
 
-    const registro = new ArquivoDto(bodyDto).asEntity(data, UsuarioEntity);
+    const registro = new ArquivoDto(bodyDto).asEntity(
+      idUsuario,
+      data,
+      UsuarioEntity,
+    );
 
     await this.repository.save(registro);
 
     return registro.id;
   }
 
-  async createArquivo(arquivo: Arquivo): Promise<Arquivo> {
-    return await this.repository.createArquivo(arquivo);
-  }
-
-  /* async update(id: number, bodyDto: AtualizarUsuarioDto): Promise<number> {
+  async update(id: number, bodyDto: ArquivoDto): Promise<number> {
     const data = new Date();
     const usuario = await this.getById(id);
 
@@ -39,15 +41,25 @@ export class ArquivoService {
       throw new NotFoundException('Usuário não encontrado');
     }
 
-    const registro = new AtualizarUsuarioDto(bodyDto).asEntity(data, usuario);
+    const registro = new ArquivoDto(bodyDto).asEntity(id, data, usuario);
 
     await this.repository.save(registro);
 
     return registro.id;
-  } */
+  }
 
-  async getAll(): Promise<Arquivo[]> {
-    return this.repository.getAll();
+  async getAll(
+    filtros: FiltroArquivoDto,
+  ): Promise<PaginationQueryResponseDto<Arquivo>> {
+    const list = await this.repository.getAll(filtros);
+
+    return {
+      content: list.content,
+      totalRecords: list.total,
+      totalPages: Math.ceil(list.total / filtros.pageSize),
+      currentPage: filtros.pageStart,
+      pageSize: filtros.pageSize,
+    };
   }
 
   async getById(id: number): Promise<Arquivo> {

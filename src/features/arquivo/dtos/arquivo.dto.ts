@@ -1,23 +1,14 @@
 import {
-  IsEnum,
   IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
 } from '@nestjs/class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { StatusEnum } from 'src/features/dominios/enum/status.enum';
 import { Arquivo } from '../entities/arquivo.entity';
+import { SituacaoEnum } from '../enum/situacao.enum';
 
 export class ArquivoDto {
-  @ApiProperty({
-    description: 'Identificador do Usuário',
-    required: true,
-  })
-  @IsNotEmpty()
-  @IsInt()
-  idUsuario: number;
-
   @ApiProperty({
     description: 'Identificador do Modo de Comprovação',
     required: true,
@@ -51,21 +42,20 @@ export class ArquivoDto {
   ano: number;
 
   @ApiProperty({
+    description: 'Horas do Certificado',
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsInt()
+  horas: number;
+
+  @ApiProperty({
     description: 'Observação',
     required: false,
   })
   @IsOptional()
   @IsString()
   observacao: string;
-
-  @ApiProperty({
-    description: 'Situação do Registro',
-    required: true,
-    enum: StatusEnum,
-  })
-  @IsNotEmpty()
-  @IsEnum(StatusEnum)
-  status: StatusEnum;
 
   @ApiProperty({
     description: 'Caminho do arquivo',
@@ -79,14 +69,19 @@ export class ArquivoDto {
     Object.assign(this, init);
   }
 
-  asEntity(data: Date, entidadeReferencia: Arquivo): Arquivo {
+  asEntity(
+    idUsuario: number,
+    data: Date,
+    entidadeReferencia: Arquivo,
+  ): Arquivo {
     const entidade = entidadeReferencia;
 
     if (!entidade.id) {
       entidade.dtCadastro = data;
-      entidade.status = StatusEnum.ATIVO;
+      entidade.situacao = SituacaoEnum.AGUARDANDO_ANALISE;
     }
 
+    entidade.idUsuario = idUsuario;
     entidade.dtAtualizacao = data;
 
     Object.assign(entidade, {

@@ -6,6 +6,10 @@ import { UsuarioModule } from './features/usuario/usuario.module';
 import { Usuario } from './features/usuario/entities/usuario.entity';
 import { ArquivoModule } from './features/arquivo/arquivo.module';
 import { Arquivo } from './features/arquivo/entities/arquivo.entity';
+import { Perfil } from './features/dominios/entities/perfil.entity';
+import { Atividade } from './features/dominios/entities/atividade.entity';
+import { Dimensao } from './features/dominios/entities/dimensao.entity';
+import { ModoComprovacao } from './features/dominios/entities/modo-comprovacao.entity';
 
 @Module({
   imports: [
@@ -19,8 +23,15 @@ import { Arquivo } from './features/arquivo/entities/arquivo.entity';
       password: process.env.DB_PASSWORD,
       port: Number(process.env.DB_PORT),
       username: process.env.DB_USERNAME,
-      entities: [Usuario, Arquivo],
-      synchronize: true,
+      entities: [
+        Usuario,
+        Arquivo,
+        Perfil,
+        Atividade,
+        Dimensao,
+        ModoComprovacao,
+      ],
+      // synchronize: true,
       schema: 'APPGAC',
     }),
     AuthModule,

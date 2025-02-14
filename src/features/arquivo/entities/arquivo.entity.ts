@@ -1,19 +1,45 @@
-import { StatusEnum } from 'src/features/dominios/enum/status.enum';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { SituacaoEnum } from '../enum/situacao.enum';
+import { Usuario } from 'src/features/usuario/entities/usuario.entity';
+import { ModoComprovacao } from 'src/features/dominios/entities/modo-comprovacao.entity';
+import { Atividade } from 'src/features/dominios/entities/atividade.entity';
+import { Dimensao } from 'src/features/dominios/entities/dimensao.entity';
 
 @Entity({ name: 'arquivo' })
 export class Arquivo {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'Identificador do Usuário', nullable: false })
+  @ManyToOne(() => Usuario)
+  @JoinColumn({ name: 'Identificador do Usuario' })
+  usuario: Usuario;
+
+  @Column({ name: 'Identificador do Usuario', nullable: false })
   idUsuario: number;
+
+  @ManyToOne(() => ModoComprovacao)
+  @JoinColumn({ name: 'Identificador do Modo de Comprovação' })
+  modoComprovacao: ModoComprovacao;
 
   @Column({ name: 'Identificador do Modo de Comprovação', nullable: false })
   idModoComprovacao: number;
 
+  @ManyToOne(() => Atividade)
+  @JoinColumn({ name: 'Identificador da Atividade' })
+  atividade: Atividade;
+
   @Column({ name: 'Identificador da Atividade', nullable: false })
   idAtividade: number;
+
+  @ManyToOne(() => Dimensao)
+  @JoinColumn({ name: 'Identificador da Dimensão' })
+  dimensao: Dimensao;
 
   @Column({ name: 'Identificador da Dimensão', nullable: false })
   idDimensao: number;
@@ -21,11 +47,14 @@ export class Arquivo {
   @Column({ name: 'Ano do Certificado', nullable: false })
   ano: number;
 
+  @Column({ name: 'Horas do Documento', nullable: false })
+  horas: number;
+
   @Column({ name: 'Observação', nullable: true })
   observacao: string;
 
-  @Column({ name: 'Status do Registro', nullable: false })
-  status: StatusEnum;
+  @Column({ name: 'Situação do Registro', nullable: false })
+  situacao: SituacaoEnum;
 
   @Column({ name: 'Caminho do arquivo', nullable: false })
   caminho_arquivo: string;

@@ -7,19 +7,18 @@ import {
   Param,
   ParseIntPipe,
   Delete,
-  UploadedFile,
-  UseInterceptors,
+  Query,
+  Put,
 } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { ArquivoService } from '../services/arquivo.service';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { join } from 'path';
-import { diskStorage } from 'multer';
 import { Arquivo } from '../entities/arquivo.entity';
 import { ArquivoDto } from '../dtos/arquivo.dto';
+import { FiltroArquivoDto } from '../dtos/filtro-arquivo.dto';
+import { PaginationQueryResponseDto } from 'src/commom/dto/pagination-query-response.dto';
 
 @ApiTags('Arquivo')
-@Controller('arquivo')
+@Controller('arquivo/:idUsuario/')
 export class ArquivoController {
   constructor(private readonly service: ArquivoService) {}
 
@@ -33,11 +32,14 @@ export class ArquivoController {
     summary: 'Criação do registro.',
   })
   @Post()
-  async save(@Body() body: ArquivoDto): Promise<number> {
-    return this.service.save(body);
+  async save(
+    @Param('idUsuario', ParseIntPipe) idUsuario: number,
+    @Body() body: ArquivoDto,
+  ): Promise<number> {
+    return this.service.save(idUsuario, body);
   }
 
-  /* @ApiResponse({
+  @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
   })
   @ApiResponse({
@@ -48,11 +50,11 @@ export class ArquivoController {
   })
   @Put(':id')
   async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() body: AtualizarUsuarioDto,
+    @Param('idUsuario', ParseIntPipe) id: number,
+    @Body() body: ArquivoDto,
   ): Promise<number> {
     return this.service.update(id, body);
-  } */
+  }
 
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
@@ -92,47 +94,9 @@ export class ArquivoController {
     status: HttpStatus.NOT_FOUND,
   })
   @Get()
-  async getAll() // @Query() filtros: ,
-  : Promise<Arquivo[]> {
-    return this.service.getAll();
-  }
-
-  @Post('upload')
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: join(__dirname, '..', '..', 'uploads'), // Caminho onde os arquivos serão salvos
-        filename: (req, file, cb) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, `${uniqueSuffix}-${file.originalname}`);
-        },
-      }),
-      fileFilter: (req, file, cb) => {
-        if (!file.originalname.match(/\.(pdf)$/)) {
-          return cb(new Error('Apenas arquivos PDF são permitidos!'), false);
-        }
-        cb(null, true);
-      },
-    }),
-  )
-  async uploadFile(
-    @UploadedFile() file: Express.Multer.File,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    @Body() body: any,
-  ): Promise<Arquivo> {
-    const novoArquivo = new Arquivo();
-    novoArquivo.idUsuario = body.idUsuario;
-    novoArquivo.idModoComprovacao = body.idModoComprovacao;
-    novoArquivo.idAtividade = body.idAtividade;
-    novoArquivo.idDimensao = body.idDimensao;
-    novoArquivo.ano = body.ano;
-    novoArquivo.observacao = body.observacao || null;
-    novoArquivo.status = body.status;
-    novoArquivo.caminho_arquivo = file.path; // Caminho onde o arquivo foi salvo
-    novoArquivo.dtCadastro = new Date();
-    novoArquivo.dtAtualizacao = new Date();
-
-    return await this.service.createArquivo(novoArquivo);
+  async getAll(
+    @Query() filtros: FiltroArquivoDto,
+  ): Promise<PaginationQueryResponseDto<Arquivo>> {
+    return this.service.getAll(filtros);
   }
 }
