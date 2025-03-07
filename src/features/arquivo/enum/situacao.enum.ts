@@ -1,5 +1,5 @@
 export enum SituacaoEnum {
-  AGUARDANDO_ANALISE = 'AG',
-  APROVADA = 'AP',
-  REPROVADA = 'RP',
+  EM_ANALISE = 1,
+  APROVADO = 2,
+  RECUSADO = 3,
 }

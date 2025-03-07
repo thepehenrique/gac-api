@@ -1,6 +1,5 @@
 import {
   IsEmail,
-  IsEnum,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -11,8 +10,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { StatusEnum } from 'src/features/dominios/enum/status.enum';
 import { TipoUsuarioEnum } from 'src/features/dominios/enum/tipo-usuario.enum';
 import { Usuario } from '../entities/usuario.entity';
-import { FlagRegistroEnum } from 'src/features/dominios/enum/flag-registro.enum';
-import { TipoGestorEnum } from '../enum/tipo-gestor.enum';
 
 export class UsuarioDto {
   @ApiProperty({
@@ -32,6 +29,15 @@ export class UsuarioDto {
   nome: string;
 
   @ApiProperty({
+    description: 'Número de Matrícula',
+    required: true,
+  })
+  @IsString()
+  @IsNotEmpty()
+  @ValidateIf((o) => o.tipoUsuario === TipoUsuarioEnum.ALUNO)
+  matricula: string;
+
+  @ApiProperty({
     description: 'Email',
     required: false,
   })
@@ -49,44 +55,6 @@ export class UsuarioDto {
   @IsString()
   @ValidateIf((o) => o.tipoUsuario === TipoUsuarioEnum.ADMIN)
   senha: string;
-
-  @ApiProperty({
-    description: 'Número de Matrícula',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  @ValidateIf((o) => o.tipoUsuario === TipoUsuarioEnum.ALUNO)
-  matricula: string;
-
-  @ApiProperty({
-    description: 'Gestor',
-    required: false,
-    enum: FlagRegistroEnum,
-  })
-  @IsOptional()
-  @IsEnum(FlagRegistroEnum)
-  @ValidateIf((o) => o.tipoUsuario === TipoUsuarioEnum.PROFESSOR)
-  gestor: FlagRegistroEnum;
-
-  @ApiProperty({
-    description: 'Tipo de Gestão',
-    required: false,
-    enum: TipoGestorEnum,
-  })
-  @IsOptional()
-  @IsEnum(TipoGestorEnum)
-  @ValidateIf((o) => o.tipoUsuario === TipoUsuarioEnum.PROFESSOR)
-  tipoGestao: TipoGestorEnum;
-
-  @ApiProperty({
-    description: 'Situação do Registro',
-    required: true,
-    enum: StatusEnum,
-  })
-  @IsNotEmpty()
-  @IsEnum(StatusEnum)
-  status: StatusEnum;
 
   constructor(init?: Partial<UsuarioDto>) {
     Object.assign(this, init);

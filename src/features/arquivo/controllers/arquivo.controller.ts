@@ -16,6 +16,7 @@ import { Arquivo } from '../entities/arquivo.entity';
 import { ArquivoDto } from '../dtos/arquivo.dto';
 import { FiltroArquivoDto } from '../dtos/filtro-arquivo.dto';
 import { PaginationQueryResponseDto } from 'src/commom/dto/pagination-query-response.dto';
+import { AtualizarArquivoDto } from '../dtos/atualizar-arquivo.dto';
 
 @ApiTags('Arquivo')
 @Controller('arquivo/:idUsuario/')
@@ -54,6 +55,23 @@ export class ArquivoController {
     @Body() body: ArquivoDto,
   ): Promise<number> {
     return this.service.update(id, body);
+  }
+
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+  })
+  @ApiOperation({
+    summary: 'Aprovar ou Recusar.',
+  })
+  @Put(':id/situacao')
+  async updateArquivo(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() bodyDto: AtualizarArquivoDto,
+  ): Promise<number> {
+    return this.service.updateArquivo(id, bodyDto);
   }
 
   @ApiResponse({

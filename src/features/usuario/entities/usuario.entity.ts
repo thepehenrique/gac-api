@@ -18,42 +18,42 @@ export class Usuario {
   id: number;
 
   @ManyToOne(() => Perfil)
-  @JoinColumn({ name: 'Identificador do Perfil' })
+  @JoinColumn({ name: 'id_perfil' })
   perfil: Perfil;
 
-  @Column({ name: 'Identificador do Perfil', nullable: false })
+  @Column({ name: 'id_perfil', nullable: false })
   idPerfil: number;
 
-  @Column({ name: 'Nome', nullable: false })
+  @Column({ name: 'nome', nullable: false })
   nome: string;
 
-  @Column({ name: 'Email Institucional', nullable: false })
-  email: string;
-
-  @Column({ name: 'Senha do Admin', nullable: true })
-  senha: string;
-
-  @Column({ name: 'Número de matrícula do aluno', nullable: true })
+  @Column({ name: 'matricula', nullable: true })
   matricula: string;
 
-  @Column({ name: 'Turno do aluno', nullable: true })
+  @Column({ name: 'email', nullable: false })
+  email: string;
+
+  @Column({ name: 'turno', nullable: true })
   turno: TurnoEnum;
 
-  @Column({ name: 'Curso do aluno', nullable: true })
+  @Column({ name: 'curso', nullable: true })
   curso: CursoEnum;
 
-  @Column({ name: 'Gestor', nullable: true })
-  gestor: FlagRegistroEnum;
+  @Column({ name: 'senha', nullable: true })
+  senha: string;
 
-  @Column({ name: 'Tipo de Gestor', nullable: true })
-  tipoGestor: TipoGestorEnum;
-
-  @Column({ name: 'Status do Registro', nullable: false })
+  @Column({ name: 'status', nullable: false })
   status: StatusEnum;
 
-  @Column({ name: 'Data do Registro', nullable: false })
+  @Column({ name: 'gestor', nullable: true })
+  gestor: FlagRegistroEnum;
+
+  @Column({ name: 'tipo_gestor', nullable: true })
+  tipoGestor: TipoGestorEnum;
+
+  @Column({ name: 'dtCadastro', nullable: false })
   dtCadastro: Date;
 
-  @Column({ name: 'Data de Atualização do Registro', nullable: false })
+  @Column({ name: 'dtAtualizacao', nullable: false })
   dtAtualizacao: Date;
 }

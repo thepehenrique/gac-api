@@ -10,28 +10,12 @@ import { SituacaoEnum } from '../enum/situacao.enum';
 
 export class ArquivoDto {
   @ApiProperty({
-    description: 'Identificador do Modo de Comprovação',
-    required: true,
-  })
-  @IsNotEmpty()
-  @IsInt()
-  idModoComprovacao: number;
-
-  @ApiProperty({
     description: 'Identificador da Atividade',
     required: true,
   })
   @IsNotEmpty()
   @IsInt()
   idAtividade: number;
-
-  @ApiProperty({
-    description: 'Identificador da Dimensão',
-    required: true,
-  })
-  @IsNotEmpty()
-  @IsInt()
-  idDimensao: number;
 
   @ApiProperty({
     description: 'Ano do Certificado',
@@ -78,7 +62,7 @@ export class ArquivoDto {
 
     if (!entidade.id) {
       entidade.dtCadastro = data;
-      entidade.situacao = SituacaoEnum.AGUARDANDO_ANALISE;
+      entidade.idSituacao = SituacaoEnum.EM_ANALISE;
     }
 
     entidade.idUsuario = idUsuario;

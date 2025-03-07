@@ -28,7 +28,7 @@ export class AtualizarUsuarioDto {
     required: true,
     enum: TurnoEnum,
   })
-  @ValidateIf((o) => o.tipoUsuario !== TipoUsuarioEnum.ALUNO)
+  @ValidateIf((o) => o.tipoUsuario !== TipoUsuarioEnum.ADMIN)
   @IsOptional()
   @IsEnum(TurnoEnum)
   turno: TurnoEnum;
@@ -47,7 +47,7 @@ export class AtualizarUsuarioDto {
     required: false,
     enum: FlagRegistroEnum,
   })
-  @ValidateIf((o) => o.tipoUsuario !== TipoUsuarioEnum.PROFESSOR)
+  @ValidateIf((o) => o.tipoUsuario === TipoUsuarioEnum.PROFESSOR)
   @IsOptional()
   @IsEnum(FlagRegistroEnum)
   gestor: FlagRegistroEnum;
@@ -57,10 +57,10 @@ export class AtualizarUsuarioDto {
     required: false,
     enum: TipoGestorEnum,
   })
-  @ValidateIf((o) => o.tipoUsuario !== TipoUsuarioEnum.PROFESSOR)
+  @ValidateIf((o) => o.tipoUsuario === TipoUsuarioEnum.PROFESSOR)
   @IsOptional()
   @IsEnum(TipoGestorEnum)
-  tipoGestao: TipoGestorEnum;
+  tipoGestor: TipoGestorEnum;
 
   constructor(init?: Partial<AtualizarUsuarioDto>) {
     Object.assign(this, init);

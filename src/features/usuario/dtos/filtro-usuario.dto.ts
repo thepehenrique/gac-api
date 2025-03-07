@@ -37,7 +37,7 @@ export class FiltroUsuarioDto extends PaginationQueryDto {
   matricula: number;
 
   @ApiProperty({
-    description: 'Matrícula do Usuário Aluno',
+    description: 'Perfil do Usuário',
     required: false,
     enum: TipoUsuarioEnum,
   })

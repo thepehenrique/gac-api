@@ -12,6 +12,7 @@ import { PaginationQueryResponseDto } from 'src/commom/dto/pagination-query-resp
 import { FlagRegistroEnum } from 'src/features/dominios/enum/flag-registro.enum';
 import { TipoGestorEnum } from '../enum/tipo-gestor.enum';
 import { AtualizarUsuarioDto } from '../dtos/atualizar-usuario.dto';
+import { StatusEnum } from 'src/features/dominios/enum/status.enum';
 
 @Injectable()
 export class UsuarioService {
@@ -27,6 +28,12 @@ export class UsuarioService {
 
     const registro = new UsuarioDto(bodyDto).asEntity(data, UsuarioEntity);
 
+    if (bodyDto.matricula && bodyDto.matricula.length !== 13) {
+      throw new BadRequestException(
+        'A matrícula deve ter exatamente 13 caracteres.',
+      );
+    }
+
     await this.repository.save(registro);
 
     return registro.id;
@@ -37,10 +44,16 @@ export class UsuarioService {
     const usuario = await this.getById(id);
 
     if (!usuario) {
-      throw new NotFoundException('Usuário não encontrado');
+      throw new NotFoundException('Usuário não encontrado.');
     }
 
-    if (bodyDto.tipoGestao === TipoGestorEnum.RESPONSAVEL) {
+    if (bodyDto.gestor === FlagRegistroEnum.SIM && !bodyDto.tipoGestor) {
+      throw new BadRequestException(
+        'O campo tipoGestao é obrigatório para professores que são gestores.',
+      );
+    }
+
+    if (bodyDto.tipoGestor === TipoGestorEnum.RESPONSAVEL) {
       const professorResponsavel = await this.repository.findOne({
         where: {
           tipoGestor: TipoGestorEnum.RESPONSAVEL,
@@ -79,18 +92,17 @@ export class UsuarioService {
     return this.repository.getById(id);
   }
 
-  async delete(id: number): Promise<void> {
-    const registro = await this.getById(id);
-    if (!registro) throw new NotFoundException('Registro não encontrado');
-
-    try {
-      await this.repository.delete(id);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      throw new BadRequestException(
-        'Ocorreu um erro ao tentar excluir os dados.',
-      );
+  async toggleStatus(id: number, status: StatusEnum): Promise<Usuario> {
+    const entity = await this.getById(id);
+    if (!entity) {
+      throw new NotFoundException('Registro não encontrado.');
     }
+    entity.status = status;
+    entity.dtAtualizacao = new Date();
+
+    const registro = await this.repository.save(entity);
+
+    return registro;
   }
 
   async getByEmail(email: string): Promise<Usuario | null> {

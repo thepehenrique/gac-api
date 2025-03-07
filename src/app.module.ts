@@ -8,8 +8,8 @@ import { ArquivoModule } from './features/arquivo/arquivo.module';
 import { Arquivo } from './features/arquivo/entities/arquivo.entity';
 import { Perfil } from './features/dominios/entities/perfil.entity';
 import { Atividade } from './features/dominios/entities/atividade.entity';
+import { Situacao } from './features/dominios/entities/situacao.entity';
 import { Dimensao } from './features/dominios/entities/dimensao.entity';
-import { ModoComprovacao } from './features/dominios/entities/modo-comprovacao.entity';
 
 @Module({
   imports: [
@@ -23,16 +23,9 @@ import { ModoComprovacao } from './features/dominios/entities/modo-comprovacao.e
       password: process.env.DB_PASSWORD,
       port: Number(process.env.DB_PORT),
       username: process.env.DB_USERNAME,
-      entities: [
-        Usuario,
-        Arquivo,
-        Perfil,
-        Atividade,
-        Dimensao,
-        ModoComprovacao,
-      ],
+      entities: [Usuario, Arquivo, Perfil, Atividade, Dimensao, Situacao],
       // synchronize: true,
-      schema: 'APPGAC',
+      schema: 'gac',
     }),
     AuthModule,
     UsuarioModule,

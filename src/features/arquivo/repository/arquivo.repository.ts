@@ -1,12 +1,19 @@
 import { EntityManager, Repository } from 'typeorm';
 import { Arquivo } from '../entities/arquivo.entity';
 import { FiltroArquivoDto } from '../dtos/filtro-arquivo.dto';
+import { Dimensao } from 'src/features/dominios/entities/dimensao.entity';
+import { Atividade } from 'src/features/dominios/entities/atividade.entity';
+import { SituacaoEnum } from '../enum/situacao.enum';
 
 export class ArquivoRepository {
   protected readonly repository: Repository<Arquivo>;
+  protected readonly repositoryDimensao: Repository<Dimensao>;
+  protected readonly repositoryAtividade: Repository<Atividade>;
 
   constructor(entityManager: EntityManager) {
     this.repository = entityManager.getRepository(Arquivo);
+    this.repositoryDimensao = entityManager.getRepository(Dimensao);
+    this.repositoryAtividade = entityManager.getRepository(Atividade);
   }
 
   async save(arquivo: Arquivo): Promise<Arquivo> {
@@ -24,9 +31,8 @@ export class ArquivoRepository {
     const query = this.repository
       .createQueryBuilder('item')
       .innerJoinAndSelect('item.usuario', 'usuario')
-      .innerJoinAndSelect('item.modoComprovacao', 'modoComprovacao')
       .innerJoinAndSelect('item.atividade', 'atividade')
-      .innerJoinAndSelect('item.dimensao', 'dimensao');
+      .innerJoinAndSelect('atividade.dimensao', 'dimensao');
     if (filtros.idUsuario) {
       query.andWhere(`item.idUsuario = :idUsuario`, {
         idUsuario: filtros.idUsuario,
@@ -40,7 +46,7 @@ export class ArquivoRepository {
     }
 
     if (filtros.idDimensao) {
-      query.andWhere(`item.idDimensao = :idDimensao`, {
+      query.andWhere(`atividade.idDimensao = :idDimensao`, {
         idDimensao: filtros.idDimensao,
       });
     }
@@ -86,11 +92,16 @@ export class ArquivoRepository {
     return this.repository
       .createQueryBuilder('item')
       .innerJoinAndSelect('item.usuario', 'usuario')
-      .innerJoinAndSelect('item.modoComprovacao', 'modoComprovacao')
       .innerJoinAndSelect('item.atividade', 'atividade')
-      .innerJoinAndSelect('item.dimensao', 'dimensao')
+      .innerJoinAndSelect('atividade.dimensao', 'dimensao')
       .where('item.id = :id', { id })
       .getOne();
+  }
+
+  async getAtividadeById(idAtividade: number): Promise<Atividade> {
+    return this.repositoryAtividade.findOne({
+      where: { id: idAtividade },
+    });
   }
 
   async delete(id: number): Promise<void> {
@@ -100,5 +111,57 @@ export class ArquivoRepository {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async findOne(conditions: any): Promise<Arquivo | null> {
     return this.repository.findOne(conditions);
+  }
+
+  async getTotalHorasAverbadas(idUsuario: number): Promise<number> {
+    const result = await this.repository
+      .createQueryBuilder('arquivo')
+      .where('arquivo.idUsuario = :idUsuario', { idUsuario })
+      .andWhere('arquivo.idSituacao = :situacao', {
+        situacao: SituacaoEnum.APROVADO,
+      })
+      .select('SUM(arquivo.horasAverbadas)', 'total')
+      .getRawOne();
+
+    return result?.total || 0;
+  }
+
+  async getHorasAverbadasPorTipoAtividade(
+    idUsuario: number,
+    id: number,
+  ): Promise<number> {
+    const result = await this.repository
+      .createQueryBuilder('arquivo')
+      .innerJoin('arquivo.atividade', 'atividade')
+      .select('SUM(arquivo.horasAverbadas)', 'total')
+      .where('arquivo.idUsuario = :idUsuario', { idUsuario })
+      .andWhere('atividade.id = :id', {
+        id,
+      })
+      .andWhere('arquivo.idSituacao = :situacao', {
+        situacao: SituacaoEnum.APROVADO,
+      })
+      .getRawOne();
+
+    return Number(result?.total) || 0;
+  }
+
+  async getTotalHorasAverbadasPorDimensao(
+    idUsuario: number,
+    idDimensao: number,
+  ): Promise<number> {
+    const result = await this.repository
+      .createQueryBuilder('arquivo')
+      .innerJoin('arquivo.atividade', 'atividade')
+      .innerJoin('atividade.dimensao', 'dimensao')
+      .select('SUM(arquivo.horasAverbadas)', 'total')
+      .where('arquivo.idUsuario = :idUsuario', { idUsuario })
+      .andWhere('dimensao.id = :idDimensao', { idDimensao })
+      .andWhere('arquivo.idSituacao = :situacao', {
+        situacao: SituacaoEnum.APROVADO,
+      })
+      .getRawOne();
+
+    return Number(result?.total) || 0;
   }
 }

@@ -6,7 +6,6 @@ import {
   Get,
   Param,
   ParseIntPipe,
-  Delete,
   Put,
   Query,
 } from '@nestjs/common';
@@ -17,6 +16,7 @@ import { UsuarioDto } from '../dtos/usuario.dto';
 import { FiltroUsuarioDto } from '../dtos/filtro-usuario.dto';
 import { PaginationQueryResponseDto } from 'src/commom/dto/pagination-query-response.dto';
 import { AtualizarUsuarioDto } from '../dtos/atualizar-usuario.dto';
+import { StatusEnum } from 'src/features/dominios/enum/status.enum';
 
 @ApiTags('Usuario')
 @Controller('usuario')
@@ -76,12 +76,40 @@ export class UsuarioController {
     status: HttpStatus.NOT_FOUND,
   })
   @ApiOperation({
-    summary: 'Remove o registro pelo Id.',
+    summary: 'Ativar (status) do registro.',
+  })
+  @Put('/:id/ativar')
+  async activate(@Param('id', ParseIntPipe) id: number): Promise<Usuario> {
+    return this.service.toggleStatus(id, StatusEnum.ATIVO);
+  }
+
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+  })
+  @ApiOperation({
+    summary: 'Desativar (status) do registro.',
+  })
+  @Put('/:id/desativar')
+  async disable(@Param('id', ParseIntPipe) id: number): Promise<Usuario> {
+    return this.service.toggleStatus(id, StatusEnum.INATIVO);
+  }
+
+  /* @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+  })
+  @ApiOperation({
+    summary: 'Exclusão lógica do registro pelo Id.',
   })
   @Delete('/:id')
   async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.service.delete(id);
-  }
+  } */
 
   @ApiOperation({
     summary: 'Listagem dos registros cadastrados.',

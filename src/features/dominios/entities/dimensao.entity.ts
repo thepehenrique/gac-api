@@ -5,6 +5,9 @@ export class Dimensao {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'Nome', nullable: true })
+  @Column({ name: 'nome', nullable: true })
   nome: string;
+
+  @Column({ name: 'hora_total', nullable: true })
+  horaTotal: number;
 }

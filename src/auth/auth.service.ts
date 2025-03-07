@@ -1,12 +1,20 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { StatusEnum } from 'src/features/dominios/enum/status.enum';
+import { JwtService } from '@nestjs/jwt';
 import { TipoUsuarioEnum } from 'src/features/dominios/enum/tipo-usuario.enum';
 import { UsuarioDto } from 'src/features/usuario/dtos/usuario.dto';
 import { UsuarioService } from 'src/features/usuario/services/usuario.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly usuarioService: UsuarioService) {}
+  constructor(
+    private jwtService: JwtService,
+    private readonly usuarioService: UsuarioService,
+  ) {}
+
+  async validateOAuthLogin(email: string, name: string): Promise<string> {
+    const payload = { email, name };
+    return this.jwtService.sign(payload);
+  }
 
   async googleLogin(req) {
     if (!req.user) {
@@ -48,7 +56,6 @@ export class AuthService {
       nome,
       email,
       matricula,
-      status: StatusEnum.ATIVO,
     });
 
     // Salva o novo usuário no banco de dados
