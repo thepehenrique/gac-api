@@ -3,6 +3,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  MaxLength,
   ValidateIf,
 } from '@nestjs/class-validator';
 import { ApiProperty } from '@nestjs/swagger';
@@ -20,6 +21,7 @@ export class AtualizarUsuarioDto {
     required: true,
   })
   @IsOptional()
+  @MaxLength(100)
   @IsString()
   nome: string;
 

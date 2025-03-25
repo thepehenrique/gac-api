@@ -3,6 +3,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  MaxLength,
 } from '@nestjs/class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Arquivo } from '../entities/arquivo.entity';
@@ -38,6 +39,7 @@ export class ArquivoDto {
     required: false,
   })
   @IsOptional()
+  @MaxLength(500)
   @IsString()
   observacao: string;
 
@@ -46,6 +48,7 @@ export class ArquivoDto {
     required: true,
   })
   @IsNotEmpty()
+  @MaxLength(255)
   @IsString()
   caminho_arquivo: string;
 

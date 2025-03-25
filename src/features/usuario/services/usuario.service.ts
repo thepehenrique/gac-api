@@ -13,6 +13,7 @@ import { FlagRegistroEnum } from 'src/features/dominios/enum/flag-registro.enum'
 import { TipoGestorEnum } from '../enum/tipo-gestor.enum';
 import { AtualizarUsuarioDto } from '../dtos/atualizar-usuario.dto';
 import { StatusEnum } from 'src/features/dominios/enum/status.enum';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsuarioService {
@@ -34,6 +35,16 @@ export class UsuarioService {
       );
     }
 
+    if (bodyDto.idPerfil === 1) {
+      if (!bodyDto.senha) {
+        throw new BadRequestException('Administradores devem ter uma senha.');
+      }
+
+      const salt = await bcrypt.genSalt(10);
+      registro.senha = await bcrypt.hash(bodyDto.senha, salt);
+    } else {
+      registro.senha = null;
+    }
     await this.repository.save(registro);
 
     return registro.id;

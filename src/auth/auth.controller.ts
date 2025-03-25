@@ -39,7 +39,7 @@ export class AuthController {
     );
   } */
 
-  @Get('google/redirect')
+  /* @Get('google/redirect')
   @UseGuards(GoogleOAuthGuard)
   async googleAuthRedirect(@Req() req, @Res() res) {
     const jwt = await this.authService.validateOAuthLogin(
@@ -47,5 +47,15 @@ export class AuthController {
       req.user.name,
     );
     return res.redirect(`http://localhost:4200/login?token=${jwt}`);
+  } */
+
+  @Get('google/redirect')
+  @UseGuards(GoogleOAuthGuard)
+  async googleAuthRedirect(@Req() req, @Res() res) {
+    const loginResponse = await this.authService.googleLogin(req);
+
+    return res.redirect(
+      `http://localhost:4200/login?token=${loginResponse.token}&novoUsuario=${loginResponse.novoUsuario}`,
+    );
   }
 }

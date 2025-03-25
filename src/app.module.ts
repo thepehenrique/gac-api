@@ -10,6 +10,7 @@ import { Perfil } from './features/dominios/entities/perfil.entity';
 import { Atividade } from './features/dominios/entities/atividade.entity';
 import { Situacao } from './features/dominios/entities/situacao.entity';
 import { Dimensao } from './features/dominios/entities/dimensao.entity';
+import { UploadModule } from './features/upload/upload.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { Dimensao } from './features/dominios/entities/dimensao.entity';
     AuthModule,
     UsuarioModule,
     ArquivoModule,
+    UploadModule,
   ],
 })
 export class AppModule {}

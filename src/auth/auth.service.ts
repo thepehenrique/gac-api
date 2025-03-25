@@ -22,12 +22,10 @@ export class AuthService {
     }
 
     const { email } = req.user;
-
     let nome: string;
     let tipoUsuario: TipoUsuarioEnum;
     let matricula: string | null = null;
 
-    // verifica o domínio do usuário
     if (email.endsWith('@aluno.faeterj-prc.faetec.rj.gov.br')) {
       tipoUsuario = TipoUsuarioEnum.ALUNO;
       nome = email.split('.')[0];
@@ -40,30 +38,28 @@ export class AuthService {
       );
     }
 
-    // Verifica se o usuário já existe no banco pelo e-mail
+    // Verifica se o usuário já existe
     const usuarioExistente = await this.usuarioService.getByEmail(email);
 
-    if (usuarioExistente) {
-      return {
-        message: 'Usuário logado e já cadastrado no sistema.',
-        user: usuarioExistente,
-      };
+    let novoUsuario = false;
+
+    if (!usuarioExistente) {
+      novoUsuario = true;
+      const usuarioDto = new UsuarioDto({
+        idPerfil: tipoUsuario === TipoUsuarioEnum.ALUNO ? 2 : 3,
+        nome,
+        email,
+        matricula,
+      });
+
+      await this.usuarioService.save(usuarioDto);
     }
 
-    // Se não existir, cria um novo usuário
-    const usuarioDto = new UsuarioDto({
-      idPerfil: tipoUsuario === TipoUsuarioEnum.ALUNO ? 1 : 2,
-      nome,
-      email,
-      matricula,
-    });
-
-    // Salva o novo usuário no banco de dados
-    const usuarioId = await this.usuarioService.save(usuarioDto);
+    const jwt = await this.validateOAuthLogin(email, nome);
 
     return {
-      message: 'Usuário autenticado e cadastrado com sucesso!',
-      user: { id: usuarioId, ...usuarioDto },
+      token: jwt,
+      novoUsuario,
     };
   }
 }
