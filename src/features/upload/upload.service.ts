@@ -56,12 +56,10 @@ export class UploadService {
       throw new BadRequestException('Já existe um arquivo com este nome.');
     }
 
-    const fileBlob = new Blob([file.buffer], { type: 'application/pdf' });
-
     const { data, error } = await supabase.storage
       .from('gac-pdf')
-      .upload(filePath, fileBlob, {
-        upsert: false, // Não permite sobrescrita
+      .upload(filePath, file.buffer, {
+        upsert: false,
         contentType: 'application/pdf',
       });
 

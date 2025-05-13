@@ -26,18 +26,21 @@ export class ArquivoRepository {
   }
 
   async getAll(
+    idUsuario: number,
     filtros: FiltroArquivoDto,
   ): Promise<{ content: Arquivo[]; total: number }> {
     const query = this.repository
       .createQueryBuilder('item')
       .innerJoinAndSelect('item.usuario', 'usuario')
       .innerJoinAndSelect('item.atividade', 'atividade')
-      .innerJoinAndSelect('atividade.dimensao', 'dimensao');
-    if (filtros.idUsuario) {
+      .innerJoinAndSelect('atividade.dimensao', 'dimensao')
+      .where('item.idUsuario = :idUsuario', { idUsuario });
+
+    /* if (filtros.idUsuario) {
       query.andWhere(`item.idUsuario = :idUsuario`, {
         idUsuario: filtros.idUsuario,
       });
-    }
+    } */
 
     if (filtros.curso) {
       query.andWhere(`usuario.curso = :curso`, {
@@ -98,9 +101,16 @@ export class ArquivoRepository {
       .getOne();
   }
 
-  async getAtividadeById(idAtividade: number): Promise<Atividade> {
+  /* async getAtividadeById(idAtividade: number): Promise<Atividade> {
     return this.repositoryAtividade.findOne({
       where: { id: idAtividade },
+    });
+  } */
+
+  async getAtividadeById(id: number): Promise<Atividade | undefined> {
+    return this.repositoryAtividade.findOne({
+      where: { id },
+      relations: ['dimensao'], // carrega a relação com a dimensão
     });
   }
 
@@ -163,5 +173,30 @@ export class ArquivoRepository {
       .getRawOne();
 
     return Number(result?.total) || 0;
+  }
+
+  async getHorasPorAtividade(idUsuario: number) {
+    const atividades = await this.repository
+      .createQueryBuilder('arquivo')
+      .innerJoin('arquivo.atividade', 'atividade')
+      .innerJoin('atividade.dimensao', 'dimensao')
+      .select('atividade.id', 'atividadeId')
+      .addSelect('atividade.nome', 'atividadeNome')
+      .addSelect('dimensao.nome', 'dimensaoNome')
+      .addSelect('SUM(arquivo.horasAverbadas)', 'totalHoras')
+      .where('arquivo.idUsuario = :idUsuario', { idUsuario })
+      .andWhere('arquivo.idSituacao = :situacao', {
+        situacao: SituacaoEnum.APROVADO,
+      })
+      .groupBy('atividade.id')
+      .addGroupBy('dimensao.id')
+      .getRawMany();
+
+    // Garantir que o total de horas seja um número
+    atividades.forEach((atividade) => {
+      atividade.totalHoras = Number(atividade.totalHoras);
+    });
+
+    return atividades;
   }
 }

@@ -25,6 +25,8 @@ export class ArquivoService {
     this.usuarioRepository = new UsuarioRepository(this.dataSource.manager);
   }
 
+  compTotal = 100;
+
   async save(idUsuario: number, bodyDto: ArquivoDto): Promise<number> {
     const usuario = await this.usuarioRepository.findOne({
       where: { id: idUsuario, perfil: TipoUsuarioEnum.ALUNO },
@@ -44,13 +46,55 @@ export class ArquivoService {
       throw new BadRequestException('O Usuário não é do Tipo Aluno.');
     }
 
+    const horasAtualmenteAverbadas =
+      await this.repository.getTotalHorasAverbadas(idUsuario);
+
+    if (horasAtualmenteAverbadas >= this.compTotal) {
+      throw new BadRequestException(
+        'Você já completou as horas complementares, não é permitido adicionar mais arquivos.',
+      );
+    }
+
+    // Verificando o limite de horas na dimensão (não pode ultrapassar o limite da dimensão)
+    const atividade = await this.repository.getAtividadeById(
+      bodyDto.idAtividade,
+    );
+
+    if (!atividade) {
+      throw new BadRequestException('Atividade não encontrada.');
+    }
+
+    const totalHorasDimensao =
+      await this.repository.getTotalHorasAverbadasPorDimensao(
+        idUsuario,
+        atividade.dimensao.id,
+      );
+
+    if (totalHorasDimensao + bodyDto.horas > atividade.dimensao.horaTotal) {
+      throw new BadRequestException(
+        `A dimensão "${atividade.dimensao.nome}" já atingiu seu limite de horas.`,
+      );
+    }
+
+    // Verificando o limite de horas da atividade
+    const totalHorasAtividade =
+      await this.repository.getHorasAverbadasPorTipoAtividade(
+        idUsuario,
+        bodyDto.idAtividade,
+      );
+
+    if (totalHorasAtividade + bodyDto.horas > atividade.horaTotal) {
+      throw new BadRequestException(
+        `A atividade "${atividade.nome}" já atingiu seu limite de horas.`,
+      );
+    }
+
     const data = new Date();
-    const UsuarioEntity = new Arquivo();
 
     const registro = new ArquivoDto(bodyDto).asEntity(
       idUsuario,
       data,
-      UsuarioEntity,
+      new Arquivo(),
     );
 
     await this.repository.save(registro);
@@ -152,7 +196,7 @@ export class ArquivoService {
       );
     }
 
-    if (horasAtualmenteAverbadas > 100) {
+    if (horasAtualmenteAverbadas > this.compTotal) {
       throw new BadRequestException(
         `A soma das horas averbadas não pode ultrapassar 100 horas. Atualmente, você tem ${horasAtualmenteAverbadas} horas aprovadas.`,
       );
@@ -166,9 +210,10 @@ export class ArquivoService {
   }
 
   async getAll(
+    idUsuario: number,
     filtros: FiltroArquivoDto,
   ): Promise<PaginationQueryResponseDto<Arquivo>> {
-    const list = await this.repository.getAll(filtros);
+    const list = await this.repository.getAll(idUsuario, filtros);
 
     return {
       content: list.content,
@@ -195,5 +240,25 @@ export class ArquivoService {
         'Ocorreu um erro ao tentar excluir os dados.',
       );
     }
+  }
+
+  async getHorasUsuario(idUsuario: number) {
+    // Obtemos as atividades, dimensões e suas respectivas horas
+    const atividades = await this.repository.getHorasPorAtividade(idUsuario);
+
+    // Calculamos o total de horas
+    let totalHoras = 0;
+    atividades.forEach((atividade) => {
+      totalHoras += atividade.totalHoras; // Soma das horas
+    });
+
+    // Verificamos se o usuário atingiu o limite de 100 horas
+    const atingiuLimite = totalHoras >= this.compTotal;
+
+    return {
+      atividades,
+      totalHoras,
+      atingiuLimite,
+    };
   }
 }

@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Atividade } from './atividade.entity';
 
 @Entity({ name: 'dimensao' })
 export class Dimensao {
@@ -10,4 +11,7 @@ export class Dimensao {
 
   @Column({ name: 'hora_total', nullable: true })
   horaTotal: number;
+
+  @OneToMany(() => Atividade, (atividade) => atividade.dimensao)
+  atividades: Atividade[];
 }

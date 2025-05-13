@@ -19,43 +19,13 @@ export class AuthController {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async googleAuth(@Req() req: Request) {}
 
-  /* @ApiOperation({ summary: 'Redireciona após login com Google OAuth' })
-  @ApiResponse({
-    status: 200,
-    description: 'Retorna informações do usuário autenticado.',
-  })
-  @Get('google/redirect')
-  @UseGuards(GoogleOAuthGuard)
-  async googleAuthRedirect(@Req() req: Request) {
-    return this.authService.googleLogin(req);
-  } */
-
-  /* @Get('google/redirect')
-  @UseGuards(GoogleOAuthGuard)
-  async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
-    const user = await this.authService.googleLogin(req);
-    res.redirect(
-      `http://localhost:4200?user=${encodeURIComponent(JSON.stringify(user))}`,
-    );
-  } */
-
-  /* @Get('google/redirect')
-  @UseGuards(GoogleOAuthGuard)
-  async googleAuthRedirect(@Req() req, @Res() res) {
-    const jwt = await this.authService.validateOAuthLogin(
-      req.user.email,
-      req.user.name,
-    );
-    return res.redirect(`http://localhost:4200/login?token=${jwt}`);
-  } */
-
   @Get('google/redirect')
   @UseGuards(GoogleOAuthGuard)
   async googleAuthRedirect(@Req() req, @Res() res) {
     const loginResponse = await this.authService.googleLogin(req);
 
     return res.redirect(
-      `http://localhost:4200/login?token=${loginResponse.token}&novoUsuario=${loginResponse.novoUsuario}`,
+      `http://localhost:4200/login?token=${loginResponse.token}&usuarioId=${loginResponse.usuarioId}&novoUsuario=${loginResponse.novoUsuario}`,
     );
   }
 }

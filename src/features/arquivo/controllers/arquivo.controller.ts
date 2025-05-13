@@ -19,7 +19,7 @@ import { PaginationQueryResponseDto } from 'src/commom/dto/pagination-query-resp
 import { AtualizarArquivoDto } from '../dtos/atualizar-arquivo.dto';
 
 @ApiTags('Arquivo')
-@Controller('arquivo/:idUsuario/')
+@Controller('arquivo')
 export class ArquivoController {
   constructor(private readonly service: ArquivoService) {}
 
@@ -32,7 +32,7 @@ export class ArquivoController {
   @ApiOperation({
     summary: 'Criação do registro.',
   })
-  @Post()
+  @Post('/:idUsuario')
   async save(
     @Param('idUsuario', ParseIntPipe) idUsuario: number,
     @Body() body: ArquivoDto,
@@ -111,10 +111,26 @@ export class ArquivoController {
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
   })
-  @Get()
+  @Get('/:idUsuario/arquivo')
   async getAll(
+    @Param('idUsuario', ParseIntPipe) idUsuario: number,
     @Query() filtros: FiltroArquivoDto,
   ): Promise<PaginationQueryResponseDto<Arquivo>> {
-    return this.service.getAll(filtros);
+    return this.service.getAll(idUsuario, filtros);
+  }
+
+  @ApiOperation({
+    summary: 'Quantidade de horas.',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+  })
+  @Get('horas/:idUsuario')
+  async getHorasTotais(@Param('idUsuario') idUsuario: number) {
+    const result = await this.service.getHorasUsuario(idUsuario);
+    return result;
   }
 }

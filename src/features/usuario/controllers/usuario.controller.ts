@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   Put,
   Query,
+  Patch,
 } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { Usuario } from '../entities/usuario.entity';
@@ -78,7 +79,7 @@ export class UsuarioController {
   @ApiOperation({
     summary: 'Ativar (status) do registro.',
   })
-  @Put('/:id/ativar')
+  @Patch('/:id/ativar')
   async activate(@Param('id', ParseIntPipe) id: number): Promise<Usuario> {
     return this.service.toggleStatus(id, StatusEnum.ATIVO);
   }
@@ -92,24 +93,10 @@ export class UsuarioController {
   @ApiOperation({
     summary: 'Desativar (status) do registro.',
   })
-  @Put('/:id/desativar')
+  @Patch('/:id/desativar')
   async disable(@Param('id', ParseIntPipe) id: number): Promise<Usuario> {
     return this.service.toggleStatus(id, StatusEnum.INATIVO);
   }
-
-  /* @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-  })
-  @ApiOperation({
-    summary: 'Exclusão lógica do registro pelo Id.',
-  })
-  @Delete('/:id')
-  async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return this.service.delete(id);
-  } */
 
   @ApiOperation({
     summary: 'Listagem dos registros cadastrados.',

@@ -82,4 +82,13 @@ export class UsuarioDto {
 
     return entidade;
   }
+
+  static fromEntity(usuario: Usuario): UsuarioDto {
+    return new UsuarioDto({
+      idPerfil: usuario.idPerfil,
+      nome: usuario.nome,
+      email: usuario.email,
+      matricula: usuario.matricula,
+    });
+  }
 }

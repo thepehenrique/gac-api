@@ -11,8 +11,14 @@ export class AuthService {
     private readonly usuarioService: UsuarioService,
   ) {}
 
-  async validateOAuthLogin(email: string, name: string): Promise<string> {
-    const payload = { email, name };
+  async validateOAuthLogin(usuario: UsuarioDto): Promise<string> {
+    const payload = {
+      email: usuario.email,
+      nome: usuario.nome,
+      tipoUsuario: usuario.idPerfil,
+      matricula: usuario.matricula,
+    };
+
     return this.jwtService.sign(payload);
   }
 
@@ -32,19 +38,17 @@ export class AuthService {
       matricula = email.split('.')[1].split('@')[0];
     } else if (email.endsWith('@faeterj-prc.faetec.rj.gov.br')) {
       tipoUsuario = TipoUsuarioEnum.PROFESSOR;
+      nome = req.user.name; // Pega o nome completo do Google
     } else {
-      throw new UnauthorizedException(
-        'Domínio do e-mail não autorizado para login.',
-      );
+      throw new UnauthorizedException('Domínio do e-mail não autorizado.');
     }
 
-    // Verifica se o usuário já existe
-    const usuarioExistente = await this.usuarioService.getByEmail(email);
-
+    let usuario = await this.usuarioService.getByEmail(email);
     let novoUsuario = false;
 
-    if (!usuarioExistente) {
+    if (!usuario) {
       novoUsuario = true;
+
       const usuarioDto = new UsuarioDto({
         idPerfil: tipoUsuario === TipoUsuarioEnum.ALUNO ? 2 : 3,
         nome,
@@ -53,13 +57,15 @@ export class AuthService {
       });
 
       await this.usuarioService.save(usuarioDto);
+      usuario = await this.usuarioService.getByEmail(email); // Pegamos o usuário com ID agora
     }
 
-    const jwt = await this.validateOAuthLogin(email, nome);
+    const jwt = await this.validateOAuthLogin(UsuarioDto.fromEntity(usuario));
 
     return {
       token: jwt,
       novoUsuario,
+      usuarioId: usuario.id,
     };
   }
 }
