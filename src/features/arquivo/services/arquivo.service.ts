@@ -14,20 +14,152 @@ import { UsuarioRepository } from 'src/features/usuario/repository/usuario.repos
 import { StatusEnum } from 'src/features/dominios/enum/status.enum';
 import { AtualizarArquivoDto } from '../dtos/atualizar-arquivo.dto';
 import { SituacaoEnum } from '../enum/situacao.enum';
+import { createClient } from '@supabase/supabase-js';
+import slugify from 'slugify';
 
 @Injectable()
 export class ArquivoService {
+  private supabase;
+
   private readonly repository: ArquivoRepository;
   private readonly usuarioRepository: UsuarioRepository;
 
   constructor(private readonly dataSource: DataSource) {
+    const supabaseURL = process.env.SUPABASE_URL;
+    const supabaseKEY = process.env.SUPABASE_KEY;
+
     this.repository = new ArquivoRepository(this.dataSource.manager);
     this.usuarioRepository = new UsuarioRepository(this.dataSource.manager);
+    this.supabase = createClient(supabaseURL, supabaseKEY);
   }
 
   compTotal = 100;
 
-  async save(idUsuario: number, bodyDto: ArquivoDto): Promise<number> {
+  async save(
+    idUsuario: number,
+    bodyDto: ArquivoDto,
+    file: Express.Multer.File,
+  ): Promise<number> {
+    const usuario = await this.usuarioRepository.findOne({
+      where: { id: idUsuario, perfil: TipoUsuarioEnum.ALUNO },
+    });
+
+    if (!usuario) {
+      throw new BadRequestException('Usuário não encontrado.');
+    }
+
+    if (usuario.status === StatusEnum.INATIVO) {
+      throw new BadRequestException(
+        'Usuário inativo. Não é permitido adicionar um arquivo.',
+      );
+    }
+
+    if (usuario.idPerfil !== TipoUsuarioEnum.ALUNO) {
+      throw new BadRequestException('O Usuário não é do Tipo Aluno.');
+    }
+
+    const horasAtualmenteAverbadas =
+      await this.repository.getTotalHorasAverbadas(idUsuario);
+
+    if (horasAtualmenteAverbadas >= this.compTotal) {
+      throw new BadRequestException(
+        'Você já completou as horas complementares, não é permitido adicionar mais arquivos.',
+      );
+    }
+
+    const atividade = await this.repository.getAtividadeById(
+      bodyDto.idAtividade,
+    );
+
+    if (!atividade) {
+      throw new BadRequestException('Atividade não encontrada.');
+    }
+
+    const totalHorasDimensao =
+      await this.repository.getTotalHorasAverbadasPorDimensao(
+        idUsuario,
+        atividade.dimensao.id,
+      );
+
+    if (totalHorasDimensao + bodyDto.horas > atividade.dimensao.horaTotal) {
+      throw new BadRequestException(
+        `A dimensão "${atividade.dimensao.nome}" já atingiu seu limite de horas.`,
+      );
+    }
+
+    const totalHorasAtividade =
+      await this.repository.getHorasAverbadasPorTipoAtividade(
+        idUsuario,
+        bodyDto.idAtividade,
+      );
+
+    if (totalHorasAtividade + bodyDto.horas > atividade.horaTotal) {
+      throw new BadRequestException(
+        `A atividade "${atividade.nome}" já atingiu seu limite de horas.`,
+      );
+    }
+
+    // ========== Upload do Arquivo ==========
+    if (!file || file.mimetype !== 'application/pdf') {
+      throw new BadRequestException('Apenas arquivos PDF são permitidos.');
+    }
+
+    const supabaseURL = process.env.SUPABASE_URL;
+    const supabaseKEY = process.env.SUPABASE_KEY;
+
+    const supabase = createClient(supabaseURL, supabaseKEY, {
+      auth: { persistSession: false },
+    });
+
+    const sanitizedFilename = slugify(file.originalname, {
+      lower: true,
+      remove: /[*+~.()'"!:@]/g,
+    });
+
+    const filePath = `uploads/${sanitizedFilename}`;
+
+    const { data: existingFiles, error: listError } = await supabase.storage
+      .from('gac-pdf')
+      .list('uploads', { search: sanitizedFilename });
+
+    if (listError) {
+      throw new Error(
+        `Erro ao verificar arquivos existentes: ${listError.message}`,
+      );
+    }
+
+    if (existingFiles && existingFiles.length > 0) {
+      throw new BadRequestException('Já existe um arquivo com este nome.');
+    }
+
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('gac-pdf')
+      .upload(filePath, file.buffer, {
+        upsert: false,
+        contentType: 'application/pdf',
+      });
+
+    if (uploadError) {
+      throw new Error(`Erro ao fazer upload: ${uploadError.message}`);
+    }
+
+    // ========== Salvar no Banco ==========
+    const data = new Date();
+    const registro = new ArquivoDto(bodyDto).asEntity(
+      idUsuario,
+      data,
+      new Arquivo(),
+    );
+
+    // Salvando o caminho do arquivo
+    registro.caminho_arquivo = uploadData.path;
+
+    await this.repository.save(registro);
+
+    return registro.id;
+  }
+
+  /* async save(idUsuario: number, bodyDto: ArquivoDto): Promise<number> {
     const usuario = await this.usuarioRepository.findOne({
       where: { id: idUsuario, perfil: TipoUsuarioEnum.ALUNO },
     });
@@ -100,7 +232,7 @@ export class ArquivoService {
     await this.repository.save(registro);
 
     return registro.id;
-  }
+  } */
 
   async update(id: number, bodyDto: ArquivoDto): Promise<number> {
     const data = new Date();
@@ -124,6 +256,10 @@ export class ArquivoService {
     const data = new Date();
     const arquivo = await this.getById(id);
 
+    if (!arquivo) {
+      throw new NotFoundException('Arquivo não encontrado.');
+    }
+
     const horaMaximaAtividade = arquivo.atividade.horaTotal;
     const horaMaximaDimensao = arquivo.atividade.dimensao.horaTotal;
 
@@ -136,10 +272,6 @@ export class ArquivoService {
         arquivo.atividade.dimensao.id,
       );
 
-    if (!arquivo) {
-      throw new NotFoundException('Arquivo não encontrado.');
-    }
-
     const horasAverbadasPorTipoAtividade =
       await this.repository.getHorasAverbadasPorTipoAtividade(
         arquivo.idUsuario,
@@ -148,10 +280,10 @@ export class ArquivoService {
 
     if (bodyDto.aprovado) {
       arquivo.horasAverbadas = bodyDto.horasAverbadas;
-      arquivo.idSituacao = SituacaoEnum.APROVADO;
+      arquivo.situacao = SituacaoEnum.APROVADO;
     } else {
       arquivo.observacao = bodyDto.observacao;
-      arquivo.idSituacao = SituacaoEnum.RECUSADO;
+      arquivo.situacao = SituacaoEnum.RECUSADO;
     }
 
     if (bodyDto.aprovado && bodyDto.horasAverbadas === undefined) {
@@ -214,6 +346,20 @@ export class ArquivoService {
     filtros: FiltroArquivoDto,
   ): Promise<PaginationQueryResponseDto<Arquivo>> {
     const list = await this.repository.getAll(idUsuario, filtros);
+
+    return {
+      content: list.content,
+      totalRecords: list.total,
+      totalPages: Math.ceil(list.total / filtros.pageSize),
+      currentPage: filtros.pageStart,
+      pageSize: filtros.pageSize,
+    };
+  }
+
+  async getAllArquivo(
+    filtros: FiltroArquivoDto,
+  ): Promise<PaginationQueryResponseDto<Arquivo>> {
+    const list = await this.repository.getAllArquivo(filtros);
 
     return {
       content: list.content,

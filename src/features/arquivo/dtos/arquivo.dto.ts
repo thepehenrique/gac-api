@@ -8,12 +8,14 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { Arquivo } from '../entities/arquivo.entity';
 import { SituacaoEnum } from '../enum/situacao.enum';
+import { Type } from 'class-transformer';
 
 export class ArquivoDto {
   @ApiProperty({
     description: 'Identificador da Atividade',
     required: true,
   })
+  @Type(() => Number)
   @IsNotEmpty()
   @IsInt()
   idAtividade: number;
@@ -22,6 +24,7 @@ export class ArquivoDto {
     description: 'Ano do Certificado',
     required: true,
   })
+  @Type(() => Number)
   @IsNotEmpty()
   @IsInt()
   ano: number;
@@ -30,6 +33,7 @@ export class ArquivoDto {
     description: 'Horas do Certificado',
     required: true,
   })
+  @Type(() => Number)
   @IsNotEmpty()
   @IsInt()
   horas: number;
@@ -43,7 +47,7 @@ export class ArquivoDto {
   @IsString()
   observacao: string;
 
-  @ApiProperty({
+  /*  @ApiProperty({
     description: 'Caminho do arquivo',
     required: true,
   })
@@ -51,7 +55,7 @@ export class ArquivoDto {
   @MaxLength(255)
   @IsString()
   caminho_arquivo: string;
-
+ */
   constructor(init?: Partial<ArquivoDto>) {
     Object.assign(this, init);
   }
@@ -65,7 +69,7 @@ export class ArquivoDto {
 
     if (!entidade.id) {
       entidade.dtCadastro = data;
-      entidade.idSituacao = SituacaoEnum.EM_ANALISE;
+      entidade.situacao = SituacaoEnum.EM_ANALISE;
     }
 
     entidade.idUsuario = idUsuario;

@@ -38,7 +38,13 @@ export class AuthService {
       matricula = email.split('.')[1].split('@')[0];
     } else if (email.endsWith('@faeterj-prc.faetec.rj.gov.br')) {
       tipoUsuario = TipoUsuarioEnum.PROFESSOR;
-      nome = req.user.name; // Pega o nome completo do Google
+      nome = email.split('.')[0];
+    } else if (email === process.env.EMAIL_TESTE_PROFESSOR) {
+      tipoUsuario = TipoUsuarioEnum.PROFESSOR;
+      nome = email.substring(0, 5);
+    } else if (email === process.env.EMAIL_ADMIN) {
+      tipoUsuario = TipoUsuarioEnum.ADMIN;
+      nome = email.substring(0, 5);
     } else {
       throw new UnauthorizedException('Domínio do e-mail não autorizado.');
     }
@@ -50,14 +56,14 @@ export class AuthService {
       novoUsuario = true;
 
       const usuarioDto = new UsuarioDto({
-        idPerfil: tipoUsuario === TipoUsuarioEnum.ALUNO ? 2 : 3,
+        idPerfil: tipoUsuario,
         nome,
         email,
         matricula,
       });
 
       await this.usuarioService.save(usuarioDto);
-      usuario = await this.usuarioService.getByEmail(email); // Pegamos o usuário com ID agora
+      usuario = await this.usuarioService.getByEmail(email);
     }
 
     const jwt = await this.validateOAuthLogin(UsuarioDto.fromEntity(usuario));
@@ -66,6 +72,7 @@ export class AuthService {
       token: jwt,
       novoUsuario,
       usuarioId: usuario.id,
+      tipoUsuario: usuario.idPerfil,
     };
   }
 }

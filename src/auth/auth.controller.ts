@@ -24,8 +24,12 @@ export class AuthController {
   async googleAuthRedirect(@Req() req, @Res() res) {
     const loginResponse = await this.authService.googleLogin(req);
 
-    return res.redirect(
+    /* return res.redirect(
       `http://localhost:4200/login?token=${loginResponse.token}&usuarioId=${loginResponse.usuarioId}&novoUsuario=${loginResponse.novoUsuario}`,
+    );
+ */
+    return res.redirect(
+      `http://localhost:4200/login?token=${loginResponse.token}&usuarioId=${loginResponse.usuarioId}&novoUsuario=${loginResponse.novoUsuario}&tipoUsuario=${loginResponse.tipoUsuario}`,
     );
   }
 }

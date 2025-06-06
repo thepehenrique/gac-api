@@ -9,21 +9,80 @@ import {
   Delete,
   Query,
   Put,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
-import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiResponse,
+  ApiOperation,
+  ApiConsumes,
+  ApiBody,
+  ApiParam,
+} from '@nestjs/swagger';
 import { ArquivoService } from '../services/arquivo.service';
 import { Arquivo } from '../entities/arquivo.entity';
 import { ArquivoDto } from '../dtos/arquivo.dto';
 import { FiltroArquivoDto } from '../dtos/filtro-arquivo.dto';
 import { PaginationQueryResponseDto } from 'src/commom/dto/pagination-query-response.dto';
 import { AtualizarArquivoDto } from '../dtos/atualizar-arquivo.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Arquivo')
 @Controller('arquivo')
 export class ArquivoController {
   constructor(private readonly service: ArquivoService) {}
 
+  @Post('/:idUsuario')
+  @ApiOperation({ summary: 'Criação do registro + upload de arquivo PDF.' })
+  @ApiParam({ name: 'idUsuario', type: Number })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Dados do arquivo + arquivo PDF',
+    schema: {
+      type: 'object',
+      properties: {
+        idAtividade: { type: 'number', example: 1 },
+        ano: { type: 'number', example: 2 },
+        horas: { type: 'number', example: 5 },
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+        observacao: {
+          type: 'string',
+        },
+      },
+      required: ['idAtividade', 'ano', 'horas', 'file'],
+    },
+  })
   @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Arquivo salvo com sucesso.',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Requisição inválida.',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Usuário ou atividade não encontrada.',
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  async save(
+    @Param('idUsuario', ParseIntPipe) idUsuario: number,
+    @Body() body: ArquivoDto,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<number> {
+    if (!file) {
+      throw new BadRequestException('Nenhum arquivo foi enviado.');
+    }
+
+    return this.service.save(idUsuario, body, file);
+  }
+
+  /* @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
   })
   @ApiResponse({
@@ -38,7 +97,7 @@ export class ArquivoController {
     @Body() body: ArquivoDto,
   ): Promise<number> {
     return this.service.save(idUsuario, body);
-  }
+  } */
 
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,

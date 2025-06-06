@@ -16,7 +16,7 @@ export class FiltroArquivoDto extends PaginationQueryDto {
   pageSort: string;
 
   @ApiProperty({
-    description: 'Horas do Documento',
+    description: 'Curso',
     required: false,
     enum: CursoEnum,
   })

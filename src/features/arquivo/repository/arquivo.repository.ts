@@ -30,14 +30,31 @@ export class ArquivoRepository {
     filtros: FiltroArquivoDto,
   ): Promise<{ content: Arquivo[]; total: number }> {
     const query = this.repository
-      .createQueryBuilder('item')
-      .innerJoinAndSelect('item.usuario', 'usuario')
-      .innerJoinAndSelect('item.atividade', 'atividade')
-      .innerJoinAndSelect('atividade.dimensao', 'dimensao')
-      .where('item.idUsuario = :idUsuario', { idUsuario });
+      .createQueryBuilder('arquivo')
+      .select([
+        'arquivo.id',
+        'arquivo.ano',
+        'arquivo.horas',
+        'arquivo.caminho_arquivo',
+        'arquivo.horasAverbadas',
+        'arquivo.observacao',
+        'arquivo.dtCadastro',
+        'arquivo.dtAtualizacao',
+        'arquivo.situacao',
+        'usuario.id',
+        'usuario.nome',
+        'atividade.id',
+        'atividade.nome',
+        'dimensao.id',
+        'dimensao.nome',
+      ])
+      .innerJoin('arquivo.usuario', 'usuario')
+      .innerJoin('arquivo.atividade', 'atividade')
+      .innerJoin('atividade.dimensao', 'dimensao')
+      .where('arquivo.idUsuario = :idUsuario', { idUsuario });
 
     /* if (filtros.idUsuario) {
-      query.andWhere(`item.idUsuario = :idUsuario`, {
+      query.andWhere(`arquivo.idUsuario = :idUsuario`, {
         idUsuario: filtros.idUsuario,
       });
     } */
@@ -55,19 +72,19 @@ export class ArquivoRepository {
     }
 
     if (filtros.horasEnviadas) {
-      query.andWhere(`item.horas = :horas`, {
+      query.andWhere(`arquivo.horas = :horas`, {
         horasEnviadas: filtros.horasEnviadas,
       });
     }
 
     if (filtros.ano) {
-      query.andWhere(`item.ano = :ano`, {
+      query.andWhere(`arquivo.ano = :ano`, {
         ano: filtros.ano,
       });
     }
 
     if (filtros.situacao) {
-      query.andWhere(`item.situacao = :situacao`, {
+      query.andWhere(`arquivo.situacao = :situacao`, {
         situacao: filtros.situacao,
       });
     }
@@ -75,7 +92,90 @@ export class ArquivoRepository {
     if (filtros.pageSort && filtros.pageOrder) {
       query.orderBy(filtros.pageSort, filtros.pageOrder);
     } else {
-      query.orderBy('item.dtCadastro', 'DESC');
+      query.orderBy('arquivo.dtCadastro', 'DESC');
+    }
+    if (filtros.pageSize) {
+      const skip = filtros.pageStart * filtros.pageSize;
+      if (skip) {
+        query.skip(skip);
+      }
+      if (filtros.pageSize) {
+        query.take(filtros.pageSize);
+      }
+    }
+
+    const [content, total] = await query.getManyAndCount();
+    return { content, total };
+  }
+
+  async getAllArquivo(
+    filtros: FiltroArquivoDto,
+  ): Promise<{ content: Arquivo[]; total: number }> {
+    const query = this.repository
+      .createQueryBuilder('arquivo')
+      .select([
+        'arquivo.id',
+        'arquivo.ano',
+        'arquivo.horas',
+        'arquivo.caminho_arquivo',
+        'arquivo.horasAverbadas',
+        'arquivo.observacao',
+        'arquivo.dtCadastro',
+        'arquivo.dtAtualizacao',
+        'arquivo.situacao',
+        'usuario.id',
+        'usuario.nome',
+        'usuario.curso',
+        'usuario.matricula',
+        'atividade.id',
+        'atividade.nome',
+        'dimensao.id',
+        'dimensao.nome',
+      ])
+      .innerJoin('arquivo.usuario', 'usuario')
+      .innerJoin('arquivo.atividade', 'atividade')
+      .innerJoin('atividade.dimensao', 'dimensao');
+
+    /* if (filtros.idUsuario) {
+      query.andWhere(`arquivo.idUsuario = :idUsuario`, {
+        idUsuario: filtros.idUsuario,
+      });
+    } */
+
+    if (filtros.curso) {
+      query.andWhere(`usuario.curso = :curso`, {
+        curso: filtros.curso,
+      });
+    }
+
+    if (filtros.idDimensao) {
+      query.andWhere(`atividade.idDimensao = :idDimensao`, {
+        idDimensao: filtros.idDimensao,
+      });
+    }
+
+    if (filtros.horasEnviadas) {
+      query.andWhere(`arquivo.horas = :horas`, {
+        horasEnviadas: filtros.horasEnviadas,
+      });
+    }
+
+    if (filtros.ano) {
+      query.andWhere(`arquivo.ano = :ano`, {
+        ano: filtros.ano,
+      });
+    }
+
+    if (filtros.situacao) {
+      query.andWhere(`arquivo.situacao = :situacao`, {
+        situacao: filtros.situacao,
+      });
+    }
+
+    if (filtros.pageSort && filtros.pageOrder) {
+      query.orderBy(filtros.pageSort, filtros.pageOrder);
+    } else {
+      query.orderBy('arquivo.dtCadastro', 'DESC');
     }
     if (filtros.pageSize) {
       const skip = filtros.pageStart * filtros.pageSize;
@@ -93,11 +193,28 @@ export class ArquivoRepository {
 
   async getById(id: number): Promise<Arquivo> {
     return this.repository
-      .createQueryBuilder('item')
-      .innerJoinAndSelect('item.usuario', 'usuario')
-      .innerJoinAndSelect('item.atividade', 'atividade')
-      .innerJoinAndSelect('atividade.dimensao', 'dimensao')
-      .where('item.id = :id', { id })
+      .createQueryBuilder('arquivo')
+      .select([
+        'arquivo.id',
+        'arquivo.ano',
+        'arquivo.horas',
+        'arquivo.caminho_arquivo',
+        'arquivo.horasAverbadas',
+        'arquivo.observacao',
+        'arquivo.dtCadastro',
+        'arquivo.dtAtualizacao',
+        'arquivo.situacao',
+        'usuario.id',
+        'usuario.nome',
+        'atividade.id',
+        'atividade.nome',
+        'dimensao.id',
+        'dimensao.nome',
+      ])
+      .innerJoin('arquivo.usuario', 'usuario')
+      .innerJoin('arquivo.atividade', 'atividade')
+      .innerJoin('atividade.dimensao', 'dimensao')
+      .where('arquivo.id = :id', { id })
       .getOne();
   }
 
@@ -127,7 +244,7 @@ export class ArquivoRepository {
     const result = await this.repository
       .createQueryBuilder('arquivo')
       .where('arquivo.idUsuario = :idUsuario', { idUsuario })
-      .andWhere('arquivo.idSituacao = :situacao', {
+      .andWhere('arquivo.situacao = :situacao', {
         situacao: SituacaoEnum.APROVADO,
       })
       .select('SUM(arquivo.horasAverbadas)', 'total')
@@ -148,7 +265,7 @@ export class ArquivoRepository {
       .andWhere('atividade.id = :id', {
         id,
       })
-      .andWhere('arquivo.idSituacao = :situacao', {
+      .andWhere('arquivo.situacao = :situacao', {
         situacao: SituacaoEnum.APROVADO,
       })
       .getRawOne();
@@ -167,7 +284,7 @@ export class ArquivoRepository {
       .select('SUM(arquivo.horasAverbadas)', 'total')
       .where('arquivo.idUsuario = :idUsuario', { idUsuario })
       .andWhere('dimensao.id = :idDimensao', { idDimensao })
-      .andWhere('arquivo.idSituacao = :situacao', {
+      .andWhere('arquivo.situacao = :situacao', {
         situacao: SituacaoEnum.APROVADO,
       })
       .getRawOne();
@@ -185,7 +302,7 @@ export class ArquivoRepository {
       .addSelect('dimensao.nome', 'dimensaoNome')
       .addSelect('SUM(arquivo.horasAverbadas)', 'totalHoras')
       .where('arquivo.idUsuario = :idUsuario', { idUsuario })
-      .andWhere('arquivo.idSituacao = :situacao', {
+      .andWhere('arquivo.situacao = :situacao', {
         situacao: SituacaoEnum.APROVADO,
       })
       .groupBy('atividade.id')

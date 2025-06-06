@@ -35,7 +35,7 @@ export class UsuarioService {
       );
     }
 
-    if (bodyDto.idPerfil === 1) {
+    /* if (bodyDto.idPerfil === 1) {
       if (!bodyDto.senha) {
         throw new BadRequestException('Administradores devem ter uma senha.');
       }
@@ -44,7 +44,7 @@ export class UsuarioService {
       registro.senha = await bcrypt.hash(bodyDto.senha, salt);
     } else {
       registro.senha = null;
-    }
+    } */
     await this.repository.save(registro);
 
     return registro.id;

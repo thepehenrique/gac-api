@@ -7,19 +7,15 @@ import {
 } from 'typeorm';
 import { Usuario } from 'src/features/usuario/entities/usuario.entity';
 import { Atividade } from 'src/features/dominios/entities/atividade.entity';
-import { Situacao } from 'src/features/dominios/entities/situacao.entity';
+import { SituacaoEnum } from '../enum/situacao.enum';
 
 @Entity({ name: 'arquivo' })
 export class Arquivo {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Situacao)
-  @JoinColumn({ name: 'id_situacao' })
-  situacao: Situacao;
-
-  @Column({ name: 'id_situacao', nullable: false })
-  idSituacao: number;
+  @Column({ name: 'situacao', nullable: false })
+  situacao: SituacaoEnum;
 
   @ManyToOne(() => Usuario)
   @JoinColumn({ name: 'id_usuario' })
