@@ -27,9 +27,9 @@ export class AtualizarArquivoDto {
   @IsString()
   @ValidateIf((obj) => obj.situacao === SituacaoEnum.RECUSADO)
   @IsNotEmpty({
-    message: 'A observação é obrigatória quando o arquivo é reprovado',
+    message: 'O comentario é obrigatória quando o arquivo é reprovado',
   })
-  observacao: string;
+  comentario: string;
 
   @ApiProperty({
     description: 'Horas Averbadas',

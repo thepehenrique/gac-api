@@ -46,6 +46,9 @@ export class Arquivo {
   @Column({ name: 'observacao', nullable: true })
   observacao: string;
 
+  @Column({ name: 'comentario', nullable: true })
+  comentario: string;
+
   @Column({ name: 'dtCadastro', nullable: false })
   dtCadastro: Date;
 

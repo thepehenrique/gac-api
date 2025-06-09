@@ -282,7 +282,7 @@ export class ArquivoService {
       arquivo.horasAverbadas = bodyDto.horasAverbadas;
       arquivo.situacao = SituacaoEnum.APROVADO;
     } else {
-      arquivo.observacao = bodyDto.observacao;
+      arquivo.comentario = bodyDto.comentario;
       arquivo.situacao = SituacaoEnum.RECUSADO;
     }
 
@@ -292,9 +292,9 @@ export class ArquivoService {
       );
     }
 
-    if (!bodyDto.aprovado && !bodyDto.observacao) {
+    if (!bodyDto.aprovado && !bodyDto.comentario) {
       throw new BadRequestException(
-        'Se recusado, o campo "observacao" deve ser preenchido.',
+        'Se recusado, o campo "comentario" deve ser preenchido.',
       );
     }
 

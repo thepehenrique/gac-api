@@ -40,13 +40,13 @@ export class FiltroArquivoDto extends PaginationQueryDto {
   @IsInt()
   horasEnviadas: number;
 
-  @ApiProperty({
+  /* @ApiProperty({
     description: 'Ano do Documento',
     required: false,
   })
   @IsOptional()
   @IsInt()
-  ano: number;
+  ano: number; */
 
   @ApiProperty({
     description: 'Situação do Registro',

@@ -53,12 +53,6 @@ export class ArquivoRepository {
       .innerJoin('atividade.dimensao', 'dimensao')
       .where('arquivo.idUsuario = :idUsuario', { idUsuario });
 
-    /* if (filtros.idUsuario) {
-      query.andWhere(`arquivo.idUsuario = :idUsuario`, {
-        idUsuario: filtros.idUsuario,
-      });
-    } */
-
     if (filtros.curso) {
       query.andWhere(`usuario.curso = :curso`, {
         curso: filtros.curso,
@@ -77,11 +71,11 @@ export class ArquivoRepository {
       });
     }
 
-    if (filtros.ano) {
+    /* if (filtros.ano) {
       query.andWhere(`arquivo.ano = :ano`, {
         ano: filtros.ano,
       });
-    }
+    } */
 
     if (filtros.situacao) {
       query.andWhere(`arquivo.situacao = :situacao`, {
@@ -123,6 +117,7 @@ export class ArquivoRepository {
         'arquivo.dtCadastro',
         'arquivo.dtAtualizacao',
         'arquivo.situacao',
+        'arquivo.caminho_arquivo',
         'usuario.id',
         'usuario.nome',
         'usuario.curso',
@@ -160,11 +155,11 @@ export class ArquivoRepository {
       });
     }
 
-    if (filtros.ano) {
+    /* if (filtros.ano) {
       query.andWhere(`arquivo.ano = :ano`, {
         ano: filtros.ano,
       });
-    }
+    } */
 
     if (filtros.situacao) {
       query.andWhere(`arquivo.situacao = :situacao`, {
