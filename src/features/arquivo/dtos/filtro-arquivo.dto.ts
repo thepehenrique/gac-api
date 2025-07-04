@@ -1,6 +1,5 @@
-import { IsIn, IsOptional } from '@nestjs/class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsInt } from 'class-validator';
+import { IsEnum, IsIn, IsInt, IsOptional } from 'class-validator';
 import { PaginationQueryDto } from 'src/commom/dto/pagination-query.dto';
 import { SituacaoEnum } from '../enum/situacao.enum';
 import { CursoEnum } from 'src/features/usuario/enum/curso.enum';

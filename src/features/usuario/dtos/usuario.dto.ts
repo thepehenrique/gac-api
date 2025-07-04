@@ -1,17 +1,15 @@
-import {
-  IsEmail,
+import { Length, IsEmail,
   IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
   MaxLength,
-  ValidateIf,
-} from '@nestjs/class-validator';
+  ValidateIf, } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { StatusEnum } from 'src/features/dominios/enum/status.enum';
 import { TipoUsuarioEnum } from 'src/features/dominios/enum/tipo-usuario.enum';
 import { Usuario } from '../entities/usuario.entity';
-import { Length } from 'class-validator';
+
 
 export class UsuarioDto {
   @ApiProperty({

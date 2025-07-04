@@ -1,14 +1,9 @@
-import {
-  IsInt,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  MaxLength,
-} from '@nestjs/class-validator';
+
 import { ApiProperty } from '@nestjs/swagger';
 import { Arquivo } from '../entities/arquivo.entity';
 import { SituacaoEnum } from '../enum/situacao.enum';
 import { Type } from 'class-transformer';
+import { IsNotEmpty, IsInt, IsOptional, MaxLength, IsString } from 'class-validator';
 
 export class ArquivoDto {
   @ApiProperty({

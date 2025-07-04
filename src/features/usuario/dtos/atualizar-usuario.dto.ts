@@ -1,11 +1,4 @@
-import {
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  MaxLength,
-  ValidateIf,
-} from '@nestjs/class-validator';
+
 import { ApiProperty } from '@nestjs/swagger';
 import { CursoEnum } from 'src/features/usuario/enum/curso.enum';
 import { StatusEnum } from 'src/features/dominios/enum/status.enum';
@@ -14,6 +7,7 @@ import { Usuario } from '../entities/usuario.entity';
 import { FlagRegistroEnum } from 'src/features/dominios/enum/flag-registro.enum';
 import { TipoGestorEnum } from '../enum/tipo-gestor.enum';
 import { TipoUsuarioEnum } from 'src/features/dominios/enum/tipo-usuario.enum';
+import { IsOptional, MaxLength, IsString, ValidateIf, IsEnum, IsNotEmpty } from 'class-validator';
 
 export class AtualizarUsuarioDto {
   @ApiProperty({
