@@ -1,5 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { FlagRegistroEnum } from 'src/features/dominios/enum/flag-registro.enum';
 import { TipoUsuarioEnum } from 'src/features/dominios/enum/tipo-usuario.enum';
 import { UsuarioDto } from 'src/features/usuario/dtos/usuario.dto';
 import { UsuarioService } from 'src/features/usuario/services/usuario.service';
@@ -60,6 +61,10 @@ export class AuthService {
         nome,
         email,
         matricula,
+        gestor:
+          tipoUsuario === TipoUsuarioEnum.PROFESSOR
+            ? FlagRegistroEnum.NAO
+            : undefined,
       });
 
       await this.usuarioService.save(usuarioDto);
@@ -73,6 +78,10 @@ export class AuthService {
       novoUsuario,
       usuarioId: usuario.id,
       tipoUsuario: usuario.idPerfil,
+      gestor:
+        tipoUsuario === TipoUsuarioEnum.PROFESSOR
+          ? FlagRegistroEnum.NAO
+          : undefined,
     };
   }
 }

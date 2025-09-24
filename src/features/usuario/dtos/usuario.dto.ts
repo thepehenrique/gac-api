@@ -1,15 +1,18 @@
-import { Length, IsEmail,
+import {
+  Length,
+  IsEmail,
   IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
   MaxLength,
-  ValidateIf, } from 'class-validator';
+  ValidateIf,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { StatusEnum } from 'src/features/dominios/enum/status.enum';
 import { TipoUsuarioEnum } from 'src/features/dominios/enum/tipo-usuario.enum';
 import { Usuario } from '../entities/usuario.entity';
-
+import { FlagRegistroEnum } from 'src/features/dominios/enum/flag-registro.enum';
 
 export class UsuarioDto {
   @ApiProperty({
@@ -60,6 +63,15 @@ export class UsuarioDto {
   @ValidateIf((o) => o.tipoUsuario === TipoUsuarioEnum.ADMIN)
   senha: string;
 
+  @ApiProperty({
+    description: 'Indica se o usuário é gestor',
+    required: false,
+    enum: FlagRegistroEnum,
+  })
+  @IsOptional()
+  @ValidateIf((o) => o.tipoUsuario === TipoUsuarioEnum.PROFESSOR)
+  gestor?: FlagRegistroEnum;
+
   constructor(init?: Partial<UsuarioDto>) {
     Object.assign(this, init);
   }
@@ -87,6 +99,7 @@ export class UsuarioDto {
       nome: usuario.nome,
       email: usuario.email,
       matricula: usuario.matricula,
+      gestor: usuario.gestor,
     });
   }
 }

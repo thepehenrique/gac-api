@@ -137,6 +137,16 @@ export class ArquivoRepository {
       });
     } */
 
+    if (filtros.nome) {
+      query.andWhere(`usuario.nome LIKE :nome`, { nome: `%${filtros.nome}%` });
+    }
+
+    if (filtros.matricula) {
+      query.andWhere(`usuario.matricula LIKE :matricula`, {
+        matricula: `%${filtros.matricula}%`,
+      });
+    }
+
     if (filtros.curso) {
       query.andWhere(`usuario.curso = :curso`, {
         curso: filtros.curso,
@@ -146,6 +156,12 @@ export class ArquivoRepository {
     if (filtros.idDimensao) {
       query.andWhere(`atividade.idDimensao = :idDimensao`, {
         idDimensao: filtros.idDimensao,
+      });
+    }
+
+    if (filtros.idAtividade) {
+      query.andWhere(`atividade.id = :idAtividade`, {
+        idAtividade: filtros.idAtividade,
       });
     }
 

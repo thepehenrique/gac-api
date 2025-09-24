@@ -9,7 +9,6 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { FlagRegistroEnum } from 'src/features/dominios/enum/flag-registro.enum';
-import { TipoGestorEnum } from '../enum/tipo-gestor.enum';
 import { Perfil } from 'src/features/dominios/entities/perfil.entity';
 
 @Entity({ name: 'usuario' })
@@ -48,8 +47,8 @@ export class Usuario {
   @Column({ name: 'gestor', nullable: true })
   gestor: FlagRegistroEnum;
 
-  @Column({ name: 'tipo_gestor', nullable: true })
-  tipoGestor: TipoGestorEnum;
+  /*  @Column({ name: 'tipo_gestor', nullable: true })
+  tipoGestor: TipoGestorEnum; */
 
   @Column({ name: 'dtCadastro', nullable: false })
   dtCadastro: Date;

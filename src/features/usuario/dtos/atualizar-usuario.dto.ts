@@ -1,13 +1,18 @@
-
 import { ApiProperty } from '@nestjs/swagger';
 import { CursoEnum } from 'src/features/usuario/enum/curso.enum';
 import { StatusEnum } from 'src/features/dominios/enum/status.enum';
 import { TurnoEnum } from 'src/features/usuario/enum/turno.enum';
 import { Usuario } from '../entities/usuario.entity';
 import { FlagRegistroEnum } from 'src/features/dominios/enum/flag-registro.enum';
-import { TipoGestorEnum } from '../enum/tipo-gestor.enum';
 import { TipoUsuarioEnum } from 'src/features/dominios/enum/tipo-usuario.enum';
-import { IsOptional, MaxLength, IsString, ValidateIf, IsEnum, IsNotEmpty } from 'class-validator';
+import {
+  IsOptional,
+  MaxLength,
+  IsString,
+  ValidateIf,
+  IsEnum,
+  IsNotEmpty,
+} from 'class-validator';
 
 export class AtualizarUsuarioDto {
   @ApiProperty({
@@ -48,7 +53,7 @@ export class AtualizarUsuarioDto {
   @IsEnum(FlagRegistroEnum)
   gestor: FlagRegistroEnum;
 
-  @ApiProperty({
+  /* @ApiProperty({
     description: 'Tipo de Gestão',
     required: false,
     enum: TipoGestorEnum,
@@ -56,7 +61,7 @@ export class AtualizarUsuarioDto {
   @ValidateIf((o) => o.tipoUsuario === TipoUsuarioEnum.PROFESSOR)
   @IsOptional()
   @IsEnum(TipoGestorEnum)
-  tipoGestor: TipoGestorEnum;
+  tipoGestor: TipoGestorEnum; */
 
   constructor(init?: Partial<AtualizarUsuarioDto>) {
     Object.assign(this, init);

@@ -6,8 +6,8 @@ import { TipoUsuarioEnum } from 'src/features/dominios/enum/tipo-usuario.enum';
 
 const sortValues = [
   'item.nome',
-  'item.matricula',
   'item.idPerfil',
+  'item.matricula',
   'item.status',
 ];
 

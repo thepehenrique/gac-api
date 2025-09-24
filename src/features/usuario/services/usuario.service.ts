@@ -9,8 +9,6 @@ import { Usuario } from '../entities/usuario.entity';
 import { UsuarioDto } from '../dtos/usuario.dto';
 import { FiltroUsuarioDto } from '../dtos/filtro-usuario.dto';
 import { PaginationQueryResponseDto } from 'src/commom/dto/pagination-query-response.dto';
-import { FlagRegistroEnum } from 'src/features/dominios/enum/flag-registro.enum';
-import { TipoGestorEnum } from '../enum/tipo-gestor.enum';
 import { AtualizarUsuarioDto } from '../dtos/atualizar-usuario.dto';
 import { StatusEnum } from 'src/features/dominios/enum/status.enum';
 import * as bcrypt from 'bcryptjs';
@@ -58,13 +56,13 @@ export class UsuarioService {
       throw new NotFoundException('Usuário não encontrado.');
     }
 
-    if (bodyDto.gestor === FlagRegistroEnum.SIM && !bodyDto.tipoGestor) {
+    /*  if (bodyDto.gestor === FlagRegistroEnum.SIM && !bodyDto.tipoGestor) {
       throw new BadRequestException(
         'O campo tipoGestao é obrigatório para professores que são gestores.',
       );
-    }
+    } 
 
-    if (bodyDto.tipoGestor === TipoGestorEnum.RESPONSAVEL) {
+     if (bodyDto.tipoGestor === TipoGestorEnum.RESPONSAVEL) {
       const professorResponsavel = await this.repository.findOne({
         where: {
           tipoGestor: TipoGestorEnum.RESPONSAVEL,
@@ -76,7 +74,7 @@ export class UsuarioService {
         professorResponsavel.gestor = FlagRegistroEnum.NAO;
         await this.repository.save(professorResponsavel);
       }
-    }
+    } */
 
     const registro = new AtualizarUsuarioDto(bodyDto).asEntity(data, usuario);
 
