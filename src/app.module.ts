@@ -38,11 +38,11 @@ import { ArquivoModule } from './features/arquivo/arquivo.module';
       // synchronize: true,
       schema: 'gac',
     }), */
+    DominioModule,
     AuthModule,
     UsuarioModule,
     ArquivoModule,
     UploadModule,
-    DominioModule,
   ],
 })
 export class AppModule {}

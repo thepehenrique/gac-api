@@ -8,6 +8,7 @@ import {
 import { Usuario } from 'src/features/usuario/entities/usuario.entity';
 import { Atividade } from 'src/features/dominios/entities/atividade.entity';
 import { SituacaoEnum } from '../enum/situacao.enum';
+import { Dimensao } from 'src/features/dominios/entities/dimensao.entity';
 
 @Entity({ name: 'arquivo' })
 export class Arquivo {
@@ -18,18 +19,25 @@ export class Arquivo {
   situacao: SituacaoEnum;
 
   @ManyToOne(() => Usuario)
-  @JoinColumn({ name: 'id_usuario' })
+  @JoinColumn({ name: 'usuario_id' })
   usuario: Usuario;
 
-  @Column({ name: 'id_usuario', nullable: false })
-  idUsuario: number;
+  @Column({ name: 'usuario_id', nullable: false })
+  usuarioId: number;
 
   @ManyToOne(() => Atividade)
-  @JoinColumn({ name: 'id_atividade' })
+  @JoinColumn({ name: 'atividade_id' })
   atividade: Atividade;
 
-  @Column({ name: 'id_atividade', nullable: false })
-  idAtividade: number;
+  @Column({ name: 'atividade_id', nullable: false })
+  atividadeId: number;
+
+  @ManyToOne(() => Dimensao)
+  @JoinColumn({ name: 'dimensao_id' })
+  dimensao: Dimensao;
+
+  @Column({ name: 'dimensao_id', nullable: false })
+  dimensaoId: number;
 
   @Column({ name: 'ano', nullable: false })
   ano: number;

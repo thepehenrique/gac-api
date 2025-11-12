@@ -34,9 +34,9 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class ArquivoController {
   constructor(private readonly service: ArquivoService) {}
 
-  @Post('/:idUsuario')
+  @Post('/:usuarioId')
   @ApiOperation({ summary: 'Criação do registro + upload de arquivo PDF.' })
-  @ApiParam({ name: 'idUsuario', type: Number })
+  @ApiParam({ name: 'usuarioId', type: Number })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     description: 'Dados do arquivo + arquivo PDF',
@@ -44,6 +44,7 @@ export class ArquivoController {
       type: 'object',
       properties: {
         idAtividade: { type: 'number', example: 1 },
+        idDimensao: { type: 'number', example: 1 },
         ano: { type: 'number', example: 2 },
         horas: { type: 'number', example: 5 },
         file: {
@@ -54,7 +55,7 @@ export class ArquivoController {
           type: 'string',
         },
       },
-      required: ['idAtividade', 'ano', 'horas', 'file'],
+      required: ['idAtividade', 'idDimensao', 'ano', 'horas', 'file'],
     },
   })
   @ApiResponse({
@@ -71,7 +72,7 @@ export class ArquivoController {
   })
   @UseInterceptors(FileInterceptor('file'))
   async save(
-    @Param('idUsuario', ParseIntPipe) idUsuario: number,
+    @Param('usuarioId', ParseIntPipe) usuarioId: number,
     @Body() body: ArquivoDto,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<number> {
@@ -79,7 +80,7 @@ export class ArquivoController {
       throw new BadRequestException('Nenhum arquivo foi enviado.');
     }
 
-    return this.service.save(idUsuario, body, file);
+    return this.service.save(usuarioId, body, file);
   }
 
   /* @ApiResponse({
@@ -110,7 +111,7 @@ export class ArquivoController {
   })
   @Put(':id')
   async update(
-    @Param('idUsuario', ParseIntPipe) id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Body() body: ArquivoDto,
   ): Promise<number> {
     return this.service.update(id, body);
@@ -170,12 +171,12 @@ export class ArquivoController {
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
   })
-  @Get('/:idUsuario/arquivo')
+  @Get('/:usuarioId/arquivo')
   async getAll(
-    @Param('idUsuario', ParseIntPipe) idUsuario: number,
+    @Param('usuarioId', ParseIntPipe) usuarioId: number,
     @Query() filtros: FiltroArquivoDto,
   ): Promise<PaginationQueryResponseDto<Arquivo>> {
-    return this.service.getAll(idUsuario, filtros);
+    return this.service.getAll(usuarioId, filtros);
   }
 
   @ApiOperation({
@@ -187,9 +188,36 @@ export class ArquivoController {
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
   })
-  @Get('horas/:idUsuario')
-  async getHorasTotais(@Param('idUsuario') idUsuario: number) {
-    const result = await this.service.getHorasUsuario(idUsuario);
+  @Get('horas/:usuarioId')
+  async getHorasTotais(@Param('usuarioId') usuarioId: number) {
+    const result = await this.service.getHorasUsuario(usuarioId);
     return result;
+  }
+
+  /**
+   * 🔹 Retorna todas as atividades dentro de uma dimensão, com totais
+   * Exemplo: GET /arquivos/horas/dimensao/1/2
+   * (usuarioId = 1, dimensaoId = 2)
+   */
+  @Get('horas/dimensao/:usuarioId/:dimensaoId')
+  async getHorasPorDimensao(
+    @Param('usuarioId', ParseIntPipe) usuarioId: number,
+    @Param('dimensaoId', ParseIntPipe) dimensaoId: number,
+  ) {
+    return this.service.getHorasPorDimensaoComTotal(usuarioId, dimensaoId);
+  }
+
+  /**
+   * 🔹 Retorna as horas de uma atividade específica dentro de uma dimensão
+   * Exemplo: GET /arquivos/horas/atividade/1/2/5
+   * (usuarioId = 1, dimensaoId = 2, atividadeId = 5)
+   */
+  @Get('horas/atividade/:usuarioId/:dimensaoId/:atividadeId')
+  async getHorasPorAtividade(
+    @Param('usuarioId', ParseIntPipe) usuarioId: number,
+    @Param('dimensaoId', ParseIntPipe) dimensaoId: number,
+    @Param('atividadeId', ParseIntPipe) atividadeId: number,
+  ) {
+    return this.service.getHoras(usuarioId, atividadeId, dimensaoId);
   }
 }

@@ -16,7 +16,7 @@ export class AuthService {
     const payload = {
       email: usuario.email,
       nome: usuario.nome,
-      tipoUsuario: usuario.idPerfil,
+      tipoUsuario: usuario.perfil,
       matricula: usuario.matricula,
     };
 
@@ -57,7 +57,7 @@ export class AuthService {
       novoUsuario = true;
 
       const usuarioDto = new UsuarioDto({
-        idPerfil: tipoUsuario,
+        perfil: tipoUsuario,
         nome,
         email,
         matricula,
@@ -67,7 +67,7 @@ export class AuthService {
             : undefined,
       });
 
-      await this.usuarioService.save(usuarioDto);
+      await this.usuarioService.salvar(usuarioDto);
       usuario = await this.usuarioService.getByEmail(email);
     }
 
@@ -77,7 +77,7 @@ export class AuthService {
       token: jwt,
       novoUsuario,
       usuarioId: usuario.id,
-      tipoUsuario: usuario.idPerfil,
+      tipoUsuario: usuario.perfil,
       gestor:
         tipoUsuario === TipoUsuarioEnum.PROFESSOR
           ? FlagRegistroEnum.NAO

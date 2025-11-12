@@ -1,20 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsIn, IsInt, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsIn, IsInt, IsOptional } from 'class-validator';
 import { PaginationQueryDto } from 'src/commom/dto/pagination-query.dto';
 import { SituacaoEnum } from '../enum/situacao.enum';
-import { CursoEnum } from 'src/features/usuario/enum/curso.enum';
 
 const sortValues = [
-  'usuario.nome',
-  'usuario.curso',
-  'usuario.matricula',
   'arquivo.ano',
   'arquivo.situacao',
   'arquivo.dtCadastro',
   'arquivo.horas',
   'arquivo.horasAverbadas',
-  'atividade.nome', // <-- adicionado
-  'dimensao.nome', // <-- adicionado
+  'atividade.nome',
+  'dimensao.nome',
 ];
 
 export class FiltroArquivoDto extends PaginationQueryDto {
@@ -28,37 +24,12 @@ export class FiltroArquivoDto extends PaginationQueryDto {
   pageSort: string;
 
   @ApiProperty({
-    description: 'Nome do aluno',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  nome?: string;
-
-  @ApiProperty({
-    description: 'Matrícula do aluno',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  matricula?: string;
-
-  @ApiProperty({
-    description: 'Curso',
-    required: false,
-    enum: CursoEnum,
-  })
-  @IsOptional()
-  @IsEnum(CursoEnum)
-  curso?: CursoEnum;
-
-  @ApiProperty({
     description: 'Dimensão da atividade',
     required: false,
   })
   @IsOptional()
   @IsInt()
-  idDimensao?: number;
+  dimensaoId?: number;
 
   @ApiProperty({
     description: 'Atividade específica',
@@ -66,7 +37,7 @@ export class FiltroArquivoDto extends PaginationQueryDto {
   })
   @IsOptional()
   @IsInt()
-  idAtividade?: number;
+  atividadeId?: number;
 
   @ApiProperty({
     description: 'Horas enviadas no documento',

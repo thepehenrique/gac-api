@@ -6,7 +6,7 @@ import { TipoUsuarioEnum } from 'src/features/dominios/enum/tipo-usuario.enum';
 
 const sortValues = [
   'item.nome',
-  'item.idPerfil',
+  'item.perfil',
   'item.matricula',
   'item.status',
 ];
@@ -42,7 +42,7 @@ export class FiltroUsuarioDto extends PaginationQueryDto {
   })
   @IsOptional()
   @IsEnum(TipoUsuarioEnum)
-  idPerfil: TipoUsuarioEnum;
+  perfil: TipoUsuarioEnum;
 
   @ApiProperty({
     description: 'Situação do Registro',

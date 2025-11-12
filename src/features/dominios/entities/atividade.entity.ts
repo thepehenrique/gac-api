@@ -16,11 +16,11 @@ export class Atividade {
   nome: string;
 
   @ManyToOne(() => Dimensao)
-  @JoinColumn({ name: 'id_dimensao' })
+  @JoinColumn({ name: 'dimensao_id' })
   dimensao: Dimensao;
 
-  @Column({ name: 'id_dimensao', nullable: true })
-  idDimensao: number;
+  @Column({ name: 'dimensao_id', nullable: true })
+  dimensaoId: number;
 
   @Column({ name: 'hora_total', nullable: true })
   horaTotal: number;

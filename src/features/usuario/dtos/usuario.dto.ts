@@ -7,6 +7,7 @@ import {
   IsString,
   MaxLength,
   ValidateIf,
+  IsEnum,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { StatusEnum } from 'src/features/dominios/enum/status.enum';
@@ -18,10 +19,11 @@ export class UsuarioDto {
   @ApiProperty({
     description: 'Identificador do Perfil',
     required: true,
+    enum: TipoUsuarioEnum,
   })
   @IsNotEmpty()
-  @IsInt()
-  idPerfil: number;
+  @IsEnum(TipoUsuarioEnum)
+  perfil: TipoUsuarioEnum;
 
   @ApiProperty({
     description: 'Nome',
@@ -95,7 +97,7 @@ export class UsuarioDto {
 
   static fromEntity(usuario: Usuario): UsuarioDto {
     return new UsuarioDto({
-      idPerfil: usuario.idPerfil,
+      perfil: usuario.perfil,
       nome: usuario.nome,
       email: usuario.email,
       matricula: usuario.matricula,

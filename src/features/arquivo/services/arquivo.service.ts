@@ -36,13 +36,11 @@ export class ArquivoService {
   compTotal = 100;
 
   async save(
-    idUsuario: number,
+    usuarioId: number,
     bodyDto: ArquivoDto,
     file: Express.Multer.File,
   ): Promise<number> {
-    const usuario = await this.usuarioRepository.findOne({
-      where: { id: idUsuario, perfil: TipoUsuarioEnum.ALUNO },
-    });
+    const usuario = await this.usuarioRepository.getUsuarioAluno(usuarioId);
 
     if (!usuario) {
       throw new BadRequestException('Usuário não encontrado.');
@@ -54,12 +52,12 @@ export class ArquivoService {
       );
     }
 
-    if (usuario.idPerfil !== TipoUsuarioEnum.ALUNO) {
+    if (usuario.perfil !== TipoUsuarioEnum.ALUNO) {
       throw new BadRequestException('O Usuário não é do Tipo Aluno.');
     }
 
     const horasAtualmenteAverbadas =
-      await this.repository.getTotalHorasAverbadas(idUsuario);
+      await this.repository.getTotalHorasAverbadas(usuarioId);
 
     if (horasAtualmenteAverbadas >= this.compTotal) {
       throw new BadRequestException(
@@ -67,8 +65,8 @@ export class ArquivoService {
       );
     }
 
-    const atividade = await this.repository.getAtividadeById(
-      bodyDto.idAtividade,
+    const atividade = await this.repository.getAtividadePorId(
+      bodyDto.atividadeId,
     );
 
     if (!atividade) {
@@ -77,7 +75,7 @@ export class ArquivoService {
 
     const totalHorasDimensao =
       await this.repository.getTotalHorasAverbadasPorDimensao(
-        idUsuario,
+        usuarioId,
         atividade.dimensao.id,
       );
 
@@ -89,13 +87,30 @@ export class ArquivoService {
 
     const totalHorasAtividade =
       await this.repository.getHorasAverbadasPorTipoAtividade(
-        idUsuario,
-        bodyDto.idAtividade,
+        usuarioId,
+        bodyDto.atividadeId,
       );
 
     if (totalHorasAtividade + bodyDto.horas > atividade.horaTotal) {
       throw new BadRequestException(
         `A atividade "${atividade.nome}" já atingiu seu limite de horas.`,
+      );
+    }
+
+    const dimensaoAtividade = await this.repository.getDimensaoAtividadeId(
+      bodyDto.atividadeId,
+      bodyDto.dimensaoId,
+    );
+
+    if (!dimensaoAtividade) {
+      throw new BadRequestException(
+        'A dimensão informada não está associada à atividade selecionada.',
+      );
+    }
+
+    if (bodyDto.dimensaoId !== dimensaoAtividade.dimensaoId) {
+      throw new BadRequestException(
+        'A dimensão deve estar de acordo com o tipo de atividade.',
       );
     }
 
@@ -145,8 +160,9 @@ export class ArquivoService {
 
     // ========== Salvar no Banco ==========
     const data = new Date();
+
     const registro = new ArquivoDto(bodyDto).asEntity(
-      idUsuario,
+      usuarioId,
       data,
       new Arquivo(),
     );
@@ -242,6 +258,23 @@ export class ArquivoService {
       throw new NotFoundException('Usuário não encontrado.');
     }
 
+    const dimensaoAtividade = await this.repository.getDimensaoAtividadeId(
+      bodyDto.atividadeId,
+      bodyDto.dimensaoId,
+    );
+
+    if (!dimensaoAtividade) {
+      throw new BadRequestException(
+        'A dimensão informada não está associada à atividade selecionada.',
+      );
+    }
+
+    if (bodyDto.dimensaoId !== dimensaoAtividade.dimensaoId) {
+      throw new BadRequestException(
+        'A dimensão deve estar de acordo com o tipo de atividade.',
+      );
+    }
+
     const registro = new ArquivoDto(bodyDto).asEntity(id, data, usuario);
 
     await this.repository.save(registro);
@@ -264,17 +297,17 @@ export class ArquivoService {
     const horaMaximaDimensao = arquivo.atividade.dimensao.horaTotal;
 
     const horasAtualmenteAverbadas =
-      await this.repository.getTotalHorasAverbadas(arquivo.idUsuario);
+      await this.repository.getTotalHorasAverbadas(arquivo.usuarioId);
 
     const horasAverbadasPorDimensao =
       await this.repository.getTotalHorasAverbadasPorDimensao(
-        arquivo.idUsuario,
+        arquivo.usuarioId,
         arquivo.atividade.dimensao.id,
       );
 
     const horasAverbadasPorTipoAtividade =
       await this.repository.getHorasAverbadasPorTipoAtividade(
-        arquivo.idUsuario,
+        arquivo.usuarioId,
         arquivo.atividade.id,
       );
 
@@ -342,10 +375,10 @@ export class ArquivoService {
   }
 
   async getAll(
-    idUsuario: number,
+    usuarioId: number,
     filtros: FiltroArquivoDto,
   ): Promise<PaginationQueryResponseDto<Arquivo>> {
-    const list = await this.repository.getAll(idUsuario, filtros);
+    const list = await this.repository.getAll(usuarioId, filtros);
 
     return {
       content: list.content,
@@ -388,9 +421,9 @@ export class ArquivoService {
     }
   }
 
-  async getHorasUsuario(idUsuario: number) {
+  async getHorasUsuario(usuarioId: number) {
     // Obtemos as atividades, dimensões e suas respectivas horas
-    const atividades = await this.repository.getHorasPorAtividade(idUsuario);
+    const atividades = await this.repository.getHorasPorAtividade(usuarioId);
 
     // Calculamos o total de horas
     let totalHoras = 0;
@@ -405,6 +438,163 @@ export class ArquivoService {
       atividades,
       totalHoras,
       atingiuLimite,
+    };
+  }
+
+  async getHorasPorDimensaoComTotal(usuarioId: number, dimensaoId: number) {
+    const existeDimensao = await this.repository.getDimensaoPorId(dimensaoId);
+
+    if (!existeDimensao) {
+      throw new BadRequestException('Essa Dimensão não existe.');
+    }
+
+    const arquivos = await this.repository.buscarPorDimensao(
+      usuarioId,
+      dimensaoId,
+    );
+
+    if (!arquivos.length) {
+      return {
+        dimensao: null,
+        atividade: null,
+        totalHorasAverbadas: 0,
+        horasRestantes: 0,
+        limiteDimensao: 0,
+        limiteAtividade: 0,
+      };
+    }
+
+    // Agrupa atividades
+    const atividadesMap = new Map<number, any>();
+
+    for (const arquivo of arquivos) {
+      const atividadeId = arquivo.atividadeId;
+      const atividadeNome = arquivo.atividade?.nome ?? 'Atividade sem nome';
+      const limiteAtividade = arquivo.atividade?.horaTotal ?? 0;
+      const limiteDimensao = arquivo.dimensao?.horaTotal ?? 0;
+      const horas = arquivo.horasAverbadas ?? arquivo.horas ?? 0;
+
+      if (!atividadesMap.has(atividadeId)) {
+        atividadesMap.set(atividadeId, {
+          atividadeId,
+          atividadeNome,
+          limiteAtividade,
+          limiteDimensao,
+          totalHorasAverbadas: 0,
+        });
+      }
+
+      const atividade = atividadesMap.get(atividadeId);
+      atividade.totalHorasAverbadas += horas;
+    }
+
+    // Gera lista formatada
+    const atividades = Array.from(atividadesMap.values()).map((a) => ({
+      atividadeId: a.atividadeId,
+      atividadeNome: a.atividadeNome,
+      limiteAtividade: a.limiteAtividade,
+      totalHorasAverbadas: a.totalHorasAverbadas,
+      horasRestantes: Math.max(0, a.limiteAtividade - a.totalHorasAverbadas),
+    }));
+
+    // Calcula totais da dimensão
+    const limiteDimensao = arquivos[0].dimensao?.horaTotal ?? 0;
+    const totalHorasAverbadas = atividades.reduce(
+      (soma, a) => soma + a.totalHorasAverbadas,
+      0,
+    );
+    const horasRestantes = Math.max(0, limiteDimensao - totalHorasAverbadas);
+
+    return {
+      dimensao: arquivos[0].dimensao?.nome,
+      limiteDimensao,
+      totalHorasAverbadas,
+      horasRestantes,
+      atividades,
+    };
+  }
+
+  /**
+   * 🔹 Consulta horas de uma atividade específica dentro de uma dimensão
+   */
+  async getHoras(usuarioId: number, atividadeId: number, dimensaoId: number) {
+    const existeDimensao = await this.repository.getDimensaoPorId(dimensaoId);
+
+    if (!existeDimensao) {
+      throw new BadRequestException('Essa Dimensão não existe.');
+    }
+
+    const existeAtividade =
+      await this.repository.getAtividadePorId(atividadeId);
+
+    if (!existeAtividade) {
+      throw new BadRequestException('Essa Atividade não existe.');
+    }
+
+    const arquivos = await this.repository.buscarPorDimensaoEAtividade(
+      usuarioId,
+      atividadeId,
+      dimensaoId,
+    );
+
+    if (!arquivos.length) {
+      return {
+        dimensao: null,
+        atividade: null,
+        totalHorasAverbadas: 0,
+        horasRestantes: 0,
+        limiteDimensao: 0,
+        limiteAtividade: 0,
+      };
+    }
+
+    // Agrupa atividades
+    const atividadesMap = new Map<number, any>();
+
+    for (const arquivo of arquivos) {
+      const atividadeId = arquivo.atividadeId;
+      const atividadeNome = arquivo.atividade?.nome ?? 'Atividade sem nome';
+      const limiteAtividade = arquivo.atividade?.horaTotal ?? 0;
+      const limiteDimensao = arquivo.dimensao?.horaTotal ?? 0;
+      const horas = arquivo.horasAverbadas ?? arquivo.horas ?? 0;
+
+      if (!atividadesMap.has(atividadeId)) {
+        atividadesMap.set(atividadeId, {
+          atividadeId,
+          atividadeNome,
+          limiteAtividade,
+          limiteDimensao,
+          totalHorasAverbadas: 0,
+        });
+      }
+
+      const atividade = atividadesMap.get(atividadeId);
+      atividade.totalHorasAverbadas += horas;
+    }
+
+    // Gera lista formatada
+    const atividades = Array.from(atividadesMap.values()).map((a) => ({
+      atividadeId: a.atividadeId,
+      atividadeNome: a.atividadeNome,
+      limiteAtividade: a.limiteAtividade,
+      totalHorasAverbadas: a.totalHorasAverbadas,
+      horasRestantes: Math.max(0, a.limiteAtividade - a.totalHorasAverbadas),
+    }));
+
+    // Calcula totais da dimensão
+    const limiteDimensao = arquivos[0].dimensao?.horaTotal ?? 0;
+    const totalHorasAverbadas = atividades.reduce(
+      (soma, a) => soma + a.totalHorasAverbadas,
+      0,
+    );
+    const horasRestantes = Math.max(0, limiteDimensao - totalHorasAverbadas);
+
+    return {
+      dimensao: arquivos[0].dimensao?.nome,
+      limiteDimensao,
+      totalHorasAverbadas,
+      horasRestantes,
+      atividades,
     };
   }
 }

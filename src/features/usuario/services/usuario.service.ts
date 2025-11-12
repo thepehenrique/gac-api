@@ -11,7 +11,6 @@ import { FiltroUsuarioDto } from '../dtos/filtro-usuario.dto';
 import { PaginationQueryResponseDto } from 'src/commom/dto/pagination-query-response.dto';
 import { AtualizarUsuarioDto } from '../dtos/atualizar-usuario.dto';
 import { StatusEnum } from 'src/features/dominios/enum/status.enum';
-import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsuarioService {
@@ -21,11 +20,11 @@ export class UsuarioService {
     this.repository = new UsuarioRepository(this.dataSource.manager);
   }
 
-  async save(bodyDto: UsuarioDto): Promise<number> {
+  async salvar(bodyDto: UsuarioDto): Promise<number> {
     const data = new Date();
-    const UsuarioEntity = new Usuario();
+    const usuarioEntidade = new Usuario();
 
-    const registro = new UsuarioDto(bodyDto).asEntity(data, UsuarioEntity);
+    const registro = new UsuarioDto(bodyDto).asEntity(data, usuarioEntidade);
 
     if (bodyDto.matricula && bodyDto.matricula.length !== 13) {
       throw new BadRequestException(
@@ -43,12 +42,12 @@ export class UsuarioService {
     } else {
       registro.senha = null;
     } */
-    await this.repository.save(registro);
+    await this.repository.salvar(registro);
 
     return registro.id;
   }
 
-  async update(id: number, bodyDto: AtualizarUsuarioDto): Promise<number> {
+  async atualizar(id: number, bodyDto: AtualizarUsuarioDto): Promise<number> {
     const data = new Date();
     const usuario = await this.getById(id);
 
@@ -78,7 +77,7 @@ export class UsuarioService {
 
     const registro = new AtualizarUsuarioDto(bodyDto).asEntity(data, usuario);
 
-    await this.repository.save(registro);
+    await this.repository.salvar(registro);
 
     return registro.id;
   }
@@ -109,7 +108,7 @@ export class UsuarioService {
     entity.status = status;
     entity.dtAtualizacao = new Date();
 
-    const registro = await this.repository.save(entity);
+    const registro = await this.repository.salvar(entity);
 
     return registro;
   }

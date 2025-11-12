@@ -1,9 +1,14 @@
-
 import { ApiProperty } from '@nestjs/swagger';
 import { Arquivo } from '../entities/arquivo.entity';
 import { SituacaoEnum } from '../enum/situacao.enum';
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsInt, IsOptional, MaxLength, IsString } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsInt,
+  IsOptional,
+  MaxLength,
+  IsString,
+} from 'class-validator';
 
 export class ArquivoDto {
   @ApiProperty({
@@ -13,7 +18,16 @@ export class ArquivoDto {
   @Type(() => Number)
   @IsNotEmpty()
   @IsInt()
-  idAtividade: number;
+  atividadeId: number;
+
+  @ApiProperty({
+    description: 'Identificador da Dimensão',
+    required: true,
+  })
+  @Type(() => Number)
+  @IsNotEmpty()
+  @IsInt()
+  dimensaoId: number;
 
   @ApiProperty({
     description: 'Ano do Certificado',
@@ -56,7 +70,7 @@ export class ArquivoDto {
   }
 
   asEntity(
-    idUsuario: number,
+    usuarioId: number,
     data: Date,
     entidadeReferencia: Arquivo,
   ): Arquivo {
@@ -67,7 +81,7 @@ export class ArquivoDto {
       entidade.situacao = SituacaoEnum.EM_ANALISE;
     }
 
-    entidade.idUsuario = idUsuario;
+    entidade.usuarioId = usuarioId;
     entidade.dtAtualizacao = data;
 
     Object.assign(entidade, {

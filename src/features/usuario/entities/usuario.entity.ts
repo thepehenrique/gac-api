@@ -1,27 +1,17 @@
 import { CursoEnum } from 'src/features/usuario/enum/curso.enum';
 import { StatusEnum } from 'src/features/dominios/enum/status.enum';
 import { TurnoEnum } from 'src/features/usuario/enum/turno.enum';
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { FlagRegistroEnum } from 'src/features/dominios/enum/flag-registro.enum';
-import { Perfil } from 'src/features/dominios/entities/perfil.entity';
+import { TipoUsuarioEnum } from 'src/features/dominios/enum/tipo-usuario.enum';
 
 @Entity({ name: 'usuario' })
 export class Usuario {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Perfil)
-  @JoinColumn({ name: 'id_perfil' })
-  perfil: Perfil;
-
-  @Column({ name: 'id_perfil', nullable: false })
-  idPerfil: number;
+  @Column({ name: 'perfil', nullable: false })
+  perfil: TipoUsuarioEnum;
 
   @Column({ name: 'nome', nullable: false })
   nome: string;

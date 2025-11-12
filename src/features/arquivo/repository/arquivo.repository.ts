@@ -20,13 +20,13 @@ export class ArquivoRepository {
     return this.repository.save(arquivo);
   }
 
-  async createArquivo(arquivo: Arquivo): Promise<Arquivo> {
+  async salvarArquivo(arquivo: Arquivo): Promise<Arquivo> {
     const novoArquivo = this.repository.create(arquivo);
     return await this.repository.save(novoArquivo);
   }
 
   async getAll(
-    idUsuario: number,
+    usuarioId: number,
     filtros: FiltroArquivoDto,
   ): Promise<{ content: Arquivo[]; total: number }> {
     const query = this.repository
@@ -51,17 +51,11 @@ export class ArquivoRepository {
       .innerJoin('arquivo.usuario', 'usuario')
       .innerJoin('arquivo.atividade', 'atividade')
       .innerJoin('atividade.dimensao', 'dimensao')
-      .where('arquivo.idUsuario = :idUsuario', { idUsuario });
+      .where('arquivo.usuarioId = :usuarioId', { usuarioId });
 
-    if (filtros.curso) {
-      query.andWhere(`usuario.curso = :curso`, {
-        curso: filtros.curso,
-      });
-    }
-
-    if (filtros.idDimensao) {
-      query.andWhere(`atividade.idDimensao = :idDimensao`, {
-        idDimensao: filtros.idDimensao,
+    if (filtros.dimensaoId) {
+      query.andWhere(`atividade.dimensaoId = :dimensaoId`, {
+        dimensaoId: filtros.dimensaoId,
       });
     }
 
@@ -71,11 +65,11 @@ export class ArquivoRepository {
       });
     }
 
-    /* if (filtros.ano) {
+    if (filtros.ano) {
       query.andWhere(`arquivo.ano = :ano`, {
         ano: filtros.ano,
       });
-    } */
+    }
 
     if (filtros.situacao) {
       query.andWhere(`arquivo.situacao = :situacao`, {
@@ -131,37 +125,15 @@ export class ArquivoRepository {
       .innerJoin('arquivo.atividade', 'atividade')
       .innerJoin('atividade.dimensao', 'dimensao');
 
-    /* if (filtros.idUsuario) {
-      query.andWhere(`arquivo.idUsuario = :idUsuario`, {
-        idUsuario: filtros.idUsuario,
-      });
-    } */
-
-    if (filtros.nome) {
-      query.andWhere(`usuario.nome LIKE :nome`, { nome: `%${filtros.nome}%` });
-    }
-
-    if (filtros.matricula) {
-      query.andWhere(`usuario.matricula LIKE :matricula`, {
-        matricula: `%${filtros.matricula}%`,
+    if (filtros.dimensaoId) {
+      query.andWhere(`atividade.dimensaoId = :dimensaoId`, {
+        dimensaoId: filtros.dimensaoId,
       });
     }
 
-    if (filtros.curso) {
-      query.andWhere(`usuario.curso = :curso`, {
-        curso: filtros.curso,
-      });
-    }
-
-    if (filtros.idDimensao) {
-      query.andWhere(`atividade.idDimensao = :idDimensao`, {
-        idDimensao: filtros.idDimensao,
-      });
-    }
-
-    if (filtros.idAtividade) {
-      query.andWhere(`atividade.id = :idAtividade`, {
-        idAtividade: filtros.idAtividade,
+    if (filtros.atividadeId) {
+      query.andWhere(`atividade.id = :atividadeId`, {
+        atividadeId: filtros.atividadeId,
       });
     }
 
@@ -170,12 +142,6 @@ export class ArquivoRepository {
         horasEnviadas: filtros.horasEnviadas,
       });
     }
-
-    /* if (filtros.ano) {
-      query.andWhere(`arquivo.ano = :ano`, {
-        ano: filtros.ano,
-      });
-    } */
 
     if (filtros.situacao) {
       query.andWhere(`arquivo.situacao = :situacao`, {
@@ -229,17 +195,11 @@ export class ArquivoRepository {
       .getOne();
   }
 
-  /* async getAtividadeById(idAtividade: number): Promise<Atividade> {
-    return this.repositoryAtividade.findOne({
-      where: { id: idAtividade },
-    });
-  } */
-
-  async getAtividadeById(id: number): Promise<Atividade | undefined> {
-    return this.repositoryAtividade.findOne({
-      where: { id },
-      relations: ['dimensao'], // carrega a relação com a dimensão
-    });
+  async getAtividadePorId(atividadeId: number): Promise<Atividade> {
+    return this.repositoryAtividade
+      .createQueryBuilder('atividade')
+      .where('atividade.id = :atividadeId', { atividadeId })
+      .getOne();
   }
 
   async delete(id: number): Promise<void> {
@@ -251,10 +211,10 @@ export class ArquivoRepository {
     return this.repository.findOne(conditions);
   }
 
-  async getTotalHorasAverbadas(idUsuario: number): Promise<number> {
+  async getTotalHorasAverbadas(usuarioId: number): Promise<number> {
     const result = await this.repository
       .createQueryBuilder('arquivo')
-      .where('arquivo.idUsuario = :idUsuario', { idUsuario })
+      .where('arquivo.usuarioId = :usuarioId', { usuarioId })
       .andWhere('arquivo.situacao = :situacao', {
         situacao: SituacaoEnum.APROVADO,
       })
@@ -265,14 +225,14 @@ export class ArquivoRepository {
   }
 
   async getHorasAverbadasPorTipoAtividade(
-    idUsuario: number,
+    usuarioId: number,
     id: number,
   ): Promise<number> {
     const result = await this.repository
       .createQueryBuilder('arquivo')
       .innerJoin('arquivo.atividade', 'atividade')
       .select('SUM(arquivo.horasAverbadas)', 'total')
-      .where('arquivo.idUsuario = :idUsuario', { idUsuario })
+      .where('arquivo.usuarioId = :usuarioId', { usuarioId })
       .andWhere('atividade.id = :id', {
         id,
       })
@@ -285,16 +245,16 @@ export class ArquivoRepository {
   }
 
   async getTotalHorasAverbadasPorDimensao(
-    idUsuario: number,
-    idDimensao: number,
+    usuarioId: number,
+    dimensaoId: number,
   ): Promise<number> {
     const result = await this.repository
       .createQueryBuilder('arquivo')
       .innerJoin('arquivo.atividade', 'atividade')
       .innerJoin('atividade.dimensao', 'dimensao')
       .select('SUM(arquivo.horasAverbadas)', 'total')
-      .where('arquivo.idUsuario = :idUsuario', { idUsuario })
-      .andWhere('dimensao.id = :idDimensao', { idDimensao })
+      .where('arquivo.usuarioId = :usuarioId', { usuarioId })
+      .andWhere('dimensao.id = :dimensaoId', { dimensaoId })
       .andWhere('arquivo.situacao = :situacao', {
         situacao: SituacaoEnum.APROVADO,
       })
@@ -303,7 +263,7 @@ export class ArquivoRepository {
     return Number(result?.total) || 0;
   }
 
-  async getHorasPorAtividade(idUsuario: number) {
+  async getHorasPorAtividade(usuarioId: number) {
     const atividades = await this.repository
       .createQueryBuilder('arquivo')
       .innerJoin('arquivo.atividade', 'atividade')
@@ -312,7 +272,7 @@ export class ArquivoRepository {
       .addSelect('atividade.nome', 'atividadeNome')
       .addSelect('dimensao.nome', 'dimensaoNome')
       .addSelect('SUM(arquivo.horasAverbadas)', 'totalHoras')
-      .where('arquivo.idUsuario = :idUsuario', { idUsuario })
+      .where('arquivo.usuarioId = :usuarioId', { usuarioId })
       .andWhere('arquivo.situacao = :situacao', {
         situacao: SituacaoEnum.APROVADO,
       })
@@ -326,5 +286,65 @@ export class ArquivoRepository {
     });
 
     return atividades;
+  }
+
+  async getDimensaoAtividadeId(
+    atividadeId: number,
+    dimensaoId: number,
+  ): Promise<Atividade> {
+    return this.repositoryAtividade
+      .createQueryBuilder('atividade')
+      .where('atividade.id = :atividadeId', { atividadeId })
+      .andWhere('atividade.dimensaoId = :dimensaoId', { dimensaoId })
+      .getOne();
+  }
+
+  async getDimensaoAtividade(
+    usuarioId: number,
+    atividadeId: number,
+    dimensaoId: number,
+  ): Promise<Arquivo[]> {
+    return this.repository
+      .createQueryBuilder('arquivo')
+      .where('arquivo.usuarioId = :usuarioId', { usuarioId })
+      .andWhere('arquivo.atividadeId = :atividadeId', { atividadeId })
+      .andWhere('arquivo.dimensaoId = :dimensaoId', { dimensaoId })
+
+      .getMany();
+  }
+
+  async getDimensaoPorId(dimensaoId: number): Promise<Dimensao> {
+    return this.repositoryDimensao
+      .createQueryBuilder('dimensao')
+      .where('dimensao.id = :dimensaoId', { dimensaoId })
+      .getOne();
+  }
+
+  async buscarPorDimensao(
+    usuarioId: number,
+    dimensaoId: number,
+  ): Promise<Arquivo[]> {
+    return this.repository
+      .createQueryBuilder('arquivo')
+      .leftJoinAndSelect('arquivo.dimensao', 'dimensao')
+      .leftJoinAndSelect('arquivo.atividade', 'atividade')
+      .where('arquivo.usuarioId = :usuarioId', { usuarioId })
+      .andWhere('arquivo.dimensaoId = :dimensaoId', { dimensaoId })
+      .getMany();
+  }
+
+  async buscarPorDimensaoEAtividade(
+    usuarioId: number,
+    atividadeId: number,
+    dimensaoId: number,
+  ): Promise<Arquivo[]> {
+    return this.repository
+      .createQueryBuilder('arquivo')
+      .leftJoinAndSelect('arquivo.dimensao', 'dimensao')
+      .leftJoinAndSelect('arquivo.atividade', 'atividade')
+      .where('arquivo.usuarioId = :usuarioId', { usuarioId })
+      .andWhere('arquivo.dimensaoId = :dimensaoId', { dimensaoId })
+      .andWhere('arquivo.atividadeId = :atividadeId', { atividadeId })
+      .getMany();
   }
 }

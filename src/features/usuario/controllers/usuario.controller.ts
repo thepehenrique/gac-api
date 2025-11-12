@@ -34,8 +34,8 @@ export class UsuarioController {
     summary: 'Criação do registro.',
   })
   @Post()
-  async save(@Body() body: UsuarioDto): Promise<number> {
-    const userId = await this.service.save(body);
+  async salvar(@Body() body: UsuarioDto): Promise<number> {
+    const userId = await this.service.salvar(body);
     return userId;
   }
 
@@ -49,11 +49,11 @@ export class UsuarioController {
     summary: 'Atualização do registro.',
   })
   @Put(':id')
-  async update(
+  async atualizar(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: AtualizarUsuarioDto,
   ): Promise<number> {
-    return this.service.update(id, body);
+    return this.service.atualizar(id, body);
   }
 
   @ApiResponse({
@@ -80,7 +80,7 @@ export class UsuarioController {
     summary: 'Ativar (status) do registro.',
   })
   @Patch('/:id/ativar')
-  async activate(@Param('id', ParseIntPipe) id: number): Promise<Usuario> {
+  async ativar(@Param('id', ParseIntPipe) id: number): Promise<Usuario> {
     return this.service.toggleStatus(id, StatusEnum.ATIVO);
   }
 
@@ -94,7 +94,7 @@ export class UsuarioController {
     summary: 'Desativar (status) do registro.',
   })
   @Patch('/:id/desativar')
-  async disable(@Param('id', ParseIntPipe) id: number): Promise<Usuario> {
+  async desativar(@Param('id', ParseIntPipe) id: number): Promise<Usuario> {
     return this.service.toggleStatus(id, StatusEnum.INATIVO);
   }
 

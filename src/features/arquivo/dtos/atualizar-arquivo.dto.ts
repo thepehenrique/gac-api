@@ -48,7 +48,7 @@ export class AtualizarArquivoDto {
   }
 
   asEntity(
-    idUsuario: number,
+    usuarioId: number,
     data: Date,
     entidadeReferencia: Arquivo,
   ): Arquivo {
@@ -58,7 +58,7 @@ export class AtualizarArquivoDto {
       entidade.dtCadastro = data;
     }
 
-    entidade.idUsuario = idUsuario;
+    entidade.usuarioId = usuarioId;
     entidade.dtAtualizacao = data;
 
     Object.assign(entidade, {
