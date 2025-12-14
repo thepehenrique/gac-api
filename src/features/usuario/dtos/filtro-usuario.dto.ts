@@ -1,14 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsIn, IsInt, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsIn, IsOptional, IsString } from 'class-validator';
 import { PaginationQueryDto } from 'src/commom/dto/pagination-query.dto';
 import { StatusEnum } from 'src/features/dominios/enum/status.enum';
 import { TipoUsuarioEnum } from 'src/features/dominios/enum/tipo-usuario.enum';
+import { TurnoEnum } from '../enum/turno.enum';
+import { CursoEnum } from '../enum/curso.enum';
 
 const sortValues = [
   'item.nome',
+  'item.turno',
+  'item.curso',
   'item.perfil',
   'item.matricula',
   'item.status',
+  'item.dtCadastro',
 ];
 
 export class FiltroUsuarioDto extends PaginationQueryDto {
@@ -32,8 +37,26 @@ export class FiltroUsuarioDto extends PaginationQueryDto {
     required: false,
   })
   @IsOptional()
-  @IsInt()
-  matricula: number;
+  @IsString()
+  matricula: string;
+
+  @ApiProperty({
+    description: 'Turno do Aluno',
+    required: false,
+    enum: TurnoEnum,
+  })
+  @IsOptional()
+  @IsEnum(TurnoEnum)
+  turno: TurnoEnum;
+
+  @ApiProperty({
+    description: 'Curso do Aluno',
+    required: false,
+    enum: CursoEnum,
+  })
+  @IsOptional()
+  @IsEnum(CursoEnum)
+  curso: CursoEnum;
 
   @ApiProperty({
     description: 'Perfil do Usuário',

@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsIn, IsInt, IsOptional } from 'class-validator';
 import { PaginationQueryDto } from 'src/commom/dto/pagination-query.dto';
 import { SituacaoEnum } from '../enum/situacao.enum';
+import { Type } from 'class-transformer';
 
 const sortValues = [
   'arquivo.ano',
@@ -28,6 +29,7 @@ export class FiltroArquivoDto extends PaginationQueryDto {
     required: false,
   })
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   dimensaoId?: number;
 
@@ -36,6 +38,7 @@ export class FiltroArquivoDto extends PaginationQueryDto {
     required: false,
   })
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   atividadeId?: number;
 

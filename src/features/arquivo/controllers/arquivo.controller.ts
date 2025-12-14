@@ -43,8 +43,8 @@ export class ArquivoController {
     schema: {
       type: 'object',
       properties: {
-        idAtividade: { type: 'number', example: 1 },
-        idDimensao: { type: 'number', example: 1 },
+        atividadeId: { type: 'number', example: 1 },
+        dimensaoId: { type: 'number', example: 1 },
         ano: { type: 'number', example: 2 },
         horas: { type: 'number', example: 5 },
         file: {
@@ -55,7 +55,7 @@ export class ArquivoController {
           type: 'string',
         },
       },
-      required: ['idAtividade', 'idDimensao', 'ano', 'horas', 'file'],
+      required: ['atividadeId', 'dimensaoId', 'ano', 'horas', 'file'],
     },
   })
   @ApiResponse({

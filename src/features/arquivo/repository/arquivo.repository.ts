@@ -53,6 +53,12 @@ export class ArquivoRepository {
       .innerJoin('atividade.dimensao', 'dimensao')
       .where('arquivo.usuarioId = :usuarioId', { usuarioId });
 
+    if (filtros.atividadeId) {
+      query.andWhere(`atividade.id = :atividadeId`, {
+        atividadeId: filtros.atividadeId,
+      });
+    }
+
     if (filtros.dimensaoId) {
       query.andWhere(`atividade.dimensaoId = :dimensaoId`, {
         dimensaoId: filtros.dimensaoId,
@@ -61,7 +67,7 @@ export class ArquivoRepository {
 
     if (filtros.horasEnviadas) {
       query.andWhere(`arquivo.horas = :horas`, {
-        horasEnviadas: filtros.horasEnviadas,
+        horas: filtros.horasEnviadas,
       });
     }
 
@@ -198,6 +204,7 @@ export class ArquivoRepository {
   async getAtividadePorId(atividadeId: number): Promise<Atividade> {
     return this.repositoryAtividade
       .createQueryBuilder('atividade')
+      .leftJoinAndSelect('atividade.dimensao', 'dimensao')
       .where('atividade.id = :atividadeId', { atividadeId })
       .getOne();
   }
