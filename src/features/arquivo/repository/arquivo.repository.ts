@@ -327,6 +327,10 @@ export class ArquivoRepository {
       .getOne();
   }
 
+  async getTodasDimensoes(): Promise<Dimensao[]> {
+    return this.repositoryDimensao.find();
+  }
+
   async buscarPorDimensao(
     usuarioId: number,
     dimensaoId: number,
@@ -337,6 +341,9 @@ export class ArquivoRepository {
       .leftJoinAndSelect('arquivo.atividade', 'atividade')
       .where('arquivo.usuarioId = :usuarioId', { usuarioId })
       .andWhere('arquivo.dimensaoId = :dimensaoId', { dimensaoId })
+      .andWhere('arquivo.situacao = :situacao', {
+        situacao: SituacaoEnum.APROVADO,
+      })
       .getMany();
   }
 

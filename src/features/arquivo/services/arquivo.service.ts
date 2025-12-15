@@ -421,6 +421,36 @@ export class ArquivoService {
     }
   }
 
+  async getHorasPorTodasDimensoes(usuarioId: number) {
+    const dimensoes = await this.repository.getTodasDimensoes();
+
+    const resultado = [];
+
+    for (const dimensao of dimensoes) {
+      const arquivos = await this.repository.buscarPorDimensao(
+        usuarioId,
+        dimensao.id,
+      );
+
+      const limiteDimensao = dimensao.horaTotal ?? 0;
+
+      const totalHorasAverbadas = arquivos.reduce((total, arquivo) => {
+        const horas = arquivo.horasAverbadas ?? arquivo.horas ?? 0;
+        return total + horas;
+      }, 0);
+
+      resultado.push({
+        dimensaoId: dimensao.id,
+        nome: dimensao.nome,
+        totalHorasAverbadas,
+        limiteDimensao,
+        horasRestantes: Math.max(0, limiteDimensao - totalHorasAverbadas),
+      });
+    }
+
+    return resultado;
+  }
+
   async getHorasUsuario(usuarioId: number) {
     // Obtemos as atividades, dimensões e suas respectivas horas
     const atividades = await this.repository.getHorasPorAtividade(usuarioId);

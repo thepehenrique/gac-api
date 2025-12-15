@@ -220,4 +220,11 @@ export class ArquivoController {
   ) {
     return this.service.getHoras(usuarioId, atividadeId, dimensaoId);
   }
+
+  @Get('horas/dimensao/:usuarioId')
+  async getHorasPorDimensaoUsuario(
+    @Param('usuarioId', ParseIntPipe) usuarioId: number,
+  ) {
+    return this.service.getHorasPorTodasDimensoes(usuarioId);
+  }
 }
