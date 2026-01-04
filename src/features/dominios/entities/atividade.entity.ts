@@ -15,7 +15,7 @@ export class Atividade {
   @Column({ name: 'nome', nullable: true })
   nome: string;
 
-  @ManyToOne(() => Dimensao)
+  @ManyToOne(() => Dimensao, { eager: true })
   @JoinColumn({ name: 'dimensao_id' })
   dimensao: Dimensao;
 

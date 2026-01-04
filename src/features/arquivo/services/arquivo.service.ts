@@ -16,6 +16,7 @@ import { AtualizarArquivoDto } from '../dtos/atualizar-arquivo.dto';
 import { SituacaoEnum } from '../enum/situacao.enum';
 import { createClient } from '@supabase/supabase-js';
 import slugify from 'slugify';
+import { UploadService } from 'src/features/upload/upload.service';
 
 @Injectable()
 export class ArquivoService {
@@ -24,7 +25,10 @@ export class ArquivoService {
   private readonly repository: ArquivoRepository;
   private readonly usuarioRepository: UsuarioRepository;
 
-  constructor(private readonly dataSource: DataSource) {
+  constructor(
+    private readonly dataSource: DataSource,
+    private readonly uploadService: UploadService,
+  ) {
     const supabaseURL = process.env.SUPABASE_URL;
     const supabaseKEY = process.env.SUPABASE_KEY;
 
@@ -81,7 +85,7 @@ export class ArquivoService {
 
     if (totalHorasDimensao + bodyDto.horas > atividade.dimensao.horaTotal) {
       throw new BadRequestException(
-        `A dimensão "${atividade.dimensao.nome}" já atingiu seu limite de horas.`,
+        `Esta dimensão já atingiu seu limite de horas.`,
       );
     }
 
@@ -408,6 +412,28 @@ export class ArquivoService {
   }
 
   async delete(id: number): Promise<void> {
+    const arquivo = await this.repository.findOne({
+      where: { id },
+    });
+
+    if (!arquivo) {
+      throw new NotFoundException('Arquivo não encontrado.');
+    }
+
+    if (arquivo.situacao !== SituacaoEnum.EM_ANALISE) {
+      throw new BadRequestException(
+        'Somente arquivos em análise podem ser excluídos.',
+      );
+    }
+
+    if (arquivo.caminho_arquivo) {
+      await this.uploadService.deleteFile(arquivo.caminho_arquivo);
+    }
+
+    await this.repository.delete(id);
+  }
+
+  /*  async delete(id: number): Promise<void> {
     const registro = await this.getById(id);
     if (!registro) throw new NotFoundException('Registro não encontrado.');
 
@@ -419,7 +445,7 @@ export class ArquivoService {
         'Ocorreu um erro ao tentar excluir os dados.',
       );
     }
-  }
+  } */
 
   async getHorasPorTodasDimensoes(usuarioId: number) {
     const dimensoes = await this.repository.getTodasDimensoes();

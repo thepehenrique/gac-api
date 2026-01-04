@@ -5,6 +5,7 @@ import { Arquivo } from './entities/arquivo.entity';
 import { ArquivoController } from './controllers/arquivo.controller';
 import { ArquivoService } from './services/arquivo.service';
 import { UsuarioModule } from '../usuario/usuario.module';
+import { UploadService } from '../upload/upload.service';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { UsuarioModule } from '../usuario/usuario.module';
     TypeOrmModule.forFeature([Arquivo]),
   ],
   controllers: [ArquivoController],
-  providers: [ArquivoService],
+  providers: [ArquivoService, UploadService],
   exports: [ArquivoService],
 })
 export class ArquivoModule {}

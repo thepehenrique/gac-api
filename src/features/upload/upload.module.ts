@@ -9,5 +9,6 @@ import { ConfigModule } from '@nestjs/config';
   imports: [ConfigModule.forRoot(), TypeOrmModule.forFeature([Arquivo])],
   controllers: [UploadController],
   providers: [UploadService],
+  exports: [UploadService],
 })
 export class UploadModule {}

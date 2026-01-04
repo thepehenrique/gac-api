@@ -148,7 +148,7 @@ export class ArquivoController {
     return this.service.getById(id);
   }
 
-  @ApiResponse({
+  /*  @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
   })
   @ApiResponse({
@@ -158,6 +158,16 @@ export class ArquivoController {
     summary: 'Remove o registro pelo Id.',
   })
   @Delete('/:id')
+  async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    return this.service.delete(id);
+  } */
+
+  @ApiOperation({
+    summary: 'Remove arquivo (registro + storage) se estiver EM_ANALISE',
+  })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND })
+  @Delete(':id')
   async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.service.delete(id);
   }

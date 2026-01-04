@@ -184,6 +184,7 @@ export class ArquivoRepository {
         'arquivo.caminho_arquivo',
         'arquivo.horasAverbadas',
         'arquivo.observacao',
+        'arquivo.comentario',
         'arquivo.dtCadastro',
         'arquivo.dtAtualizacao',
         'arquivo.situacao',
@@ -204,7 +205,8 @@ export class ArquivoRepository {
   async getAtividadePorId(atividadeId: number): Promise<Atividade> {
     return this.repositoryAtividade
       .createQueryBuilder('atividade')
-      .leftJoinAndSelect('atividade.dimensao', 'dimensao')
+      .leftJoin('atividade.dimensao', 'dimensao')
+      .addSelect(['dimensao.id', 'dimensao.nome', 'dimensao.horaTotal'])
       .where('atividade.id = :atividadeId', { atividadeId })
       .getOne();
   }
