@@ -11,6 +11,7 @@ import { FiltroUsuarioDto } from '../dtos/filtro-usuario.dto';
 import { PaginationQueryResponseDto } from 'src/commom/dto/pagination-query-response.dto';
 import { AtualizarUsuarioDto } from '../dtos/atualizar-usuario.dto';
 import { StatusEnum } from 'src/features/dominios/enum/status.enum';
+import { FlagRegistroEnum } from 'src/features/dominios/enum/flag-registro.enum';
 
 @Injectable()
 export class UsuarioService {
@@ -100,12 +101,29 @@ export class UsuarioService {
     return this.repository.getById(id);
   }
 
+  async getAllProfessor(): Promise<Usuario[]> {
+    return this.repository.getAllProfessor();
+  }
+
   async toggleStatus(id: number, status: StatusEnum): Promise<Usuario> {
     const entity = await this.getById(id);
     if (!entity) {
       throw new NotFoundException('Registro não encontrado.');
     }
     entity.status = status;
+    entity.dtAtualizacao = new Date();
+
+    const registro = await this.repository.salvar(entity);
+
+    return registro;
+  }
+
+  async toggleGestor(id: number, gestor: FlagRegistroEnum): Promise<Usuario> {
+    const entity = await this.getById(id);
+    if (!entity) {
+      throw new NotFoundException('Registro não encontrado.');
+    }
+    entity.gestor = gestor;
     entity.dtAtualizacao = new Date();
 
     const registro = await this.repository.salvar(entity);

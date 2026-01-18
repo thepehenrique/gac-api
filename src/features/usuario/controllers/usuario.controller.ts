@@ -18,6 +18,7 @@ import { FiltroUsuarioDto } from '../dtos/filtro-usuario.dto';
 import { PaginationQueryResponseDto } from 'src/commom/dto/pagination-query-response.dto';
 import { AtualizarUsuarioDto } from '../dtos/atualizar-usuario.dto';
 import { StatusEnum } from 'src/features/dominios/enum/status.enum';
+import { FlagRegistroEnum } from 'src/features/dominios/enum/flag-registro.enum';
 
 @ApiTags('Usuario')
 @Controller('usuario')
@@ -96,6 +97,36 @@ export class UsuarioController {
   @Patch('/:id/desativar')
   async desativar(@Param('id', ParseIntPipe) id: number): Promise<Usuario> {
     return this.service.toggleStatus(id, StatusEnum.INATIVO);
+  }
+
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+  })
+  @ApiOperation({
+    summary: 'Designar Gestor',
+  })
+  @Patch('/:id/designar-gestor')
+  async designarGestor(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<Usuario> {
+    return this.service.toggleGestor(id, FlagRegistroEnum.SIM);
+  }
+
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+  })
+  @ApiOperation({
+    summary: 'Remover Gestor',
+  })
+  @Patch('/:id/remover-gestor')
+  async removerGestor(@Param('id', ParseIntPipe) id: number): Promise<Usuario> {
+    return this.service.toggleGestor(id, FlagRegistroEnum.NAO);
   }
 
   @ApiOperation({

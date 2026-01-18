@@ -4,6 +4,7 @@ import { FiltroUsuarioDto } from '../dtos/filtro-usuario.dto';
 import { TipoUsuarioEnum } from 'src/features/dominios/enum/tipo-usuario.enum';
 import { TurnoEnum } from '../enum/turno.enum';
 import { CursoEnum } from '../enum/curso.enum';
+import { FlagRegistroEnum } from 'src/features/dominios/enum/flag-registro.enum';
 
 export class UsuarioRepository {
   protected readonly repository: Repository<Usuario>;
@@ -33,7 +34,8 @@ export class UsuarioRepository {
       });
     }
 
-    if (filtros.turno) {
+    // ARRUMAR DEPOIS - GERANDO BUG NO LISTAR POR
+    /* if (filtros.turno) {
       query.andWhere('item.turno = :turno', {
         turno: filtros.turno,
       });
@@ -51,7 +53,7 @@ export class UsuarioRepository {
       query.andWhere('item.curso IN (:...cursos)', {
         cursos: [CursoEnum.ANALISE_DES_SISTEMA, CursoEnum.GESTAO_AMBIENTAL],
       });
-    }
+    } */
 
     if (filtros.perfil) {
       query.andWhere(`item.perfil = :perfil`, {
@@ -101,6 +103,13 @@ export class UsuarioRepository {
       .where('item.id = :id', { id })
       .andWhere('item.perfil = :perfil', { perfil: TipoUsuarioEnum.ALUNO })
       .getOne();
+  }
+
+  async getAllProfessor(): Promise<Usuario[]> {
+    return this.repository
+      .createQueryBuilder('item')
+      .where('item.perfil = :perfil', { perfil: TipoUsuarioEnum.PROFESSOR })
+      .getMany();
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

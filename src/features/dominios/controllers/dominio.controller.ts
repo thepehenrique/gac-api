@@ -7,6 +7,8 @@ import { FiltroArquivoDto } from 'src/features/arquivo/dtos/filtro-arquivo.dto';
 import { Arquivo } from 'src/features/arquivo/entities/arquivo.entity';
 import { ArquivoService } from 'src/features/arquivo/services/arquivo.service';
 import { Dimensao } from '../entities/dimensao.entity';
+import { UsuarioService } from 'src/features/usuario/services/usuario.service';
+import { Usuario } from 'src/features/usuario/entities/usuario.entity';
 
 @ApiTags('Dominio')
 @Controller('dominio')
@@ -14,6 +16,7 @@ export class DominioController {
   constructor(
     private readonly dominioService: DominioService,
     private readonly arquivoService: ArquivoService,
+    private readonly usuarioService: UsuarioService,
   ) {}
 
   @Get('atividade')
@@ -40,5 +43,19 @@ export class DominioController {
     @Query() filtros: FiltroArquivoDto,
   ): Promise<PaginationQueryResponseDto<Arquivo>> {
     return this.arquivoService.getAllArquivo(filtros);
+  }
+
+  @ApiOperation({
+    summary: 'Listagem de todos os professores cadastrados.',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+  })
+  @Get('usuario')
+  async getAllProfessor(): Promise<Usuario[]> {
+    return this.usuarioService.getAllProfessor();
   }
 }
