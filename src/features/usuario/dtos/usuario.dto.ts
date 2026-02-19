@@ -16,6 +16,12 @@ import { FlagRegistroEnum } from 'src/features/dominios/enum/flag-registro.enum'
 
 export class UsuarioDto {
   @ApiProperty({
+    description: 'ID do usuário',
+    required: false,
+  })
+  id?: number;
+
+  @ApiProperty({
     description: 'Identificador do Perfil',
     required: true,
     enum: TipoUsuarioEnum,
@@ -40,7 +46,7 @@ export class UsuarioDto {
   @IsString()
   @Length(13, 13)
   @IsNotEmpty()
-  @ValidateIf((o) => o.tipoUsuario === TipoUsuarioEnum.ALUNO)
+  @ValidateIf((o) => o.perfil === TipoUsuarioEnum.ALUNO)
   matricula: string;
 
   @ApiProperty({
@@ -51,7 +57,7 @@ export class UsuarioDto {
   @IsString()
   @MaxLength(255)
   @IsEmail()
-  @ValidateIf((o) => o.tipoUsuario !== TipoUsuarioEnum.ADMIN)
+  @ValidateIf((o) => o.perfil !== TipoUsuarioEnum.ADMIN)
   email: string;
 
   @ApiProperty({
@@ -61,7 +67,7 @@ export class UsuarioDto {
   @IsOptional()
   @MaxLength(255)
   @IsString()
-  @ValidateIf((o) => o.tipoUsuario === TipoUsuarioEnum.ADMIN)
+  @ValidateIf((o) => o.perfil === TipoUsuarioEnum.ADMIN)
   senha: string;
 
   @ApiProperty({
@@ -70,7 +76,7 @@ export class UsuarioDto {
     enum: FlagRegistroEnum,
   })
   @IsOptional()
-  @ValidateIf((o) => o.tipoUsuario === TipoUsuarioEnum.PROFESSOR)
+  @ValidateIf((o) => o.perfil === TipoUsuarioEnum.PROFESSOR)
   gestor?: FlagRegistroEnum;
 
   constructor(init?: Partial<UsuarioDto>) {
@@ -96,6 +102,7 @@ export class UsuarioDto {
 
   static fromEntity(usuario: Usuario): UsuarioDto {
     return new UsuarioDto({
+      id: usuario.id,
       perfil: usuario.perfil,
       nome: usuario.nome,
       email: usuario.email,

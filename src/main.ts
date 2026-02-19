@@ -13,7 +13,7 @@ async function bootstrap() {
 
   app.useGlobalPipes(
     new ValidationPipe({
-      transform: true, // transforma string para number, etc.
+      transform: true,
       whitelist: true,
       forbidNonWhitelisted: true,
     }),
@@ -22,6 +22,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Gestão de Atividades Complementares')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);

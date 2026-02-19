@@ -1,7 +1,12 @@
-import { Controller, Get, HttpStatus, Query } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Query, UseGuards } from '@nestjs/common';
 import { Atividade } from '../entities/atividade.entity';
 import { DominioService } from '../services/dominio.service';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { PaginationQueryResponseDto } from 'src/commom/dto/pagination-query-response.dto';
 import { FiltroArquivoDto } from 'src/features/arquivo/dtos/filtro-arquivo.dto';
 import { Arquivo } from 'src/features/arquivo/entities/arquivo.entity';
@@ -9,8 +14,14 @@ import { ArquivoService } from 'src/features/arquivo/services/arquivo.service';
 import { Dimensao } from '../entities/dimensao.entity';
 import { UsuarioService } from 'src/features/usuario/services/usuario.service';
 import { Usuario } from 'src/features/usuario/entities/usuario.entity';
+import { Roles } from 'src/commom/decorators/roles.decorator';
+import { JwtAuthGuard } from 'src/commom/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/commom/guards/roles.guard';
+import { TipoUsuarioEnum } from '../enum/tipo-usuario.enum';
 
 @ApiTags('Dominio')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('dominio')
 export class DominioController {
   constructor(
@@ -19,6 +30,11 @@ export class DominioController {
     private readonly usuarioService: UsuarioService,
   ) {}
 
+  @Roles(
+    TipoUsuarioEnum.ADMIN,
+    TipoUsuarioEnum.ALUNO,
+    TipoUsuarioEnum.PROFESSOR,
+  )
   @Get('atividade')
   async getAtividade(): Promise<Atividade[]> {
     return this.dominioService.getAtividade();

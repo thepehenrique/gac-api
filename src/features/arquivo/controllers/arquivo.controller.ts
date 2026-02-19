@@ -12,6 +12,7 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -20,6 +21,7 @@ import {
   ApiConsumes,
   ApiBody,
   ApiParam,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { ArquivoService } from '../services/arquivo.service';
 import { Arquivo } from '../entities/arquivo.entity';
@@ -28,12 +30,23 @@ import { FiltroArquivoDto } from '../dtos/filtro-arquivo.dto';
 import { PaginationQueryResponseDto } from 'src/commom/dto/pagination-query-response.dto';
 import { AtualizarArquivoDto } from '../dtos/atualizar-arquivo.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { JwtAuthGuard } from 'src/commom/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/commom/guards/roles.guard';
+import { Roles } from 'src/commom/decorators/roles.decorator';
+import { TipoUsuarioEnum } from 'src/features/dominios/enum/tipo-usuario.enum';
 
 @ApiTags('Arquivo')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('arquivo')
 export class ArquivoController {
   constructor(private readonly service: ArquivoService) {}
 
+  @Roles(
+    TipoUsuarioEnum.ADMIN,
+    TipoUsuarioEnum.ALUNO,
+    TipoUsuarioEnum.PROFESSOR,
+  )
   @Post('/:usuarioId')
   @ApiOperation({ summary: 'Criação do registro + upload de arquivo PDF.' })
   @ApiParam({ name: 'usuarioId', type: Number })
@@ -109,6 +122,11 @@ export class ArquivoController {
   @ApiOperation({
     summary: 'Atualização do registro.',
   })
+  @Roles(
+    TipoUsuarioEnum.ADMIN,
+    TipoUsuarioEnum.ALUNO,
+    TipoUsuarioEnum.PROFESSOR,
+  )
   @Put(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -126,6 +144,11 @@ export class ArquivoController {
   @ApiOperation({
     summary: 'Aprovar ou Recusar.',
   })
+  @Roles(
+    TipoUsuarioEnum.ADMIN,
+    TipoUsuarioEnum.ALUNO,
+    TipoUsuarioEnum.PROFESSOR,
+  )
   @Put(':id/situacao')
   async updateArquivo(
     @Param('id', ParseIntPipe) id: number,
@@ -143,6 +166,11 @@ export class ArquivoController {
   @ApiOperation({
     summary: 'Busca do registro pelo Id.',
   })
+  @Roles(
+    TipoUsuarioEnum.ADMIN,
+    TipoUsuarioEnum.ALUNO,
+    TipoUsuarioEnum.PROFESSOR,
+  )
   @Get('/:id')
   async getById(@Param('id', ParseIntPipe) id: number): Promise<Arquivo> {
     return this.service.getById(id);
@@ -167,6 +195,11 @@ export class ArquivoController {
   })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST })
   @ApiResponse({ status: HttpStatus.NOT_FOUND })
+  @Roles(
+    TipoUsuarioEnum.ADMIN,
+    TipoUsuarioEnum.ALUNO,
+    TipoUsuarioEnum.PROFESSOR,
+  )
   @Delete(':id')
   async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.service.delete(id);
@@ -181,6 +214,11 @@ export class ArquivoController {
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
   })
+  @Roles(
+    TipoUsuarioEnum.ADMIN,
+    TipoUsuarioEnum.ALUNO,
+    TipoUsuarioEnum.PROFESSOR,
+  )
   @Get('/:usuarioId/arquivo')
   async getAll(
     @Param('usuarioId', ParseIntPipe) usuarioId: number,
@@ -198,6 +236,11 @@ export class ArquivoController {
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
   })
+  @Roles(
+    TipoUsuarioEnum.ADMIN,
+    TipoUsuarioEnum.ALUNO,
+    TipoUsuarioEnum.PROFESSOR,
+  )
   @Get('horas/:usuarioId')
   async getHorasTotais(@Param('usuarioId') usuarioId: number) {
     const result = await this.service.getHorasUsuario(usuarioId);
@@ -209,6 +252,11 @@ export class ArquivoController {
    * Exemplo: GET /arquivos/horas/dimensao/1/2
    * (usuarioId = 1, dimensaoId = 2)
    */
+  @Roles(
+    TipoUsuarioEnum.ADMIN,
+    TipoUsuarioEnum.ALUNO,
+    TipoUsuarioEnum.PROFESSOR,
+  )
   @Get('horas/dimensao/:usuarioId/:dimensaoId')
   async getHorasPorDimensao(
     @Param('usuarioId', ParseIntPipe) usuarioId: number,
@@ -222,6 +270,11 @@ export class ArquivoController {
    * Exemplo: GET /arquivos/horas/atividade/1/2/5
    * (usuarioId = 1, dimensaoId = 2, atividadeId = 5)
    */
+  @Roles(
+    TipoUsuarioEnum.ADMIN,
+    TipoUsuarioEnum.ALUNO,
+    TipoUsuarioEnum.PROFESSOR,
+  )
   @Get('horas/atividade/:usuarioId/:dimensaoId/:atividadeId')
   async getHorasPorAtividade(
     @Param('usuarioId', ParseIntPipe) usuarioId: number,
@@ -231,6 +284,11 @@ export class ArquivoController {
     return this.service.getHoras(usuarioId, atividadeId, dimensaoId);
   }
 
+  @Roles(
+    TipoUsuarioEnum.ADMIN,
+    TipoUsuarioEnum.ALUNO,
+    TipoUsuarioEnum.PROFESSOR,
+  )
   @Get('horas/dimensao/:usuarioId')
   async getHorasPorDimensaoUsuario(
     @Param('usuarioId', ParseIntPipe) usuarioId: number,

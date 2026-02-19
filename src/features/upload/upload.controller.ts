@@ -6,18 +6,36 @@ import {
   Param,
   Post,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from './upload.service';
 import { FileUploadDto } from './upload.dto';
+import { JwtAuthGuard } from 'src/commom/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/commom/guards/roles.guard';
+import { Roles } from 'src/commom/decorators/roles.decorator';
+import { TipoUsuarioEnum } from '../dominios/enum/tipo-usuario.enum';
 
-@ApiTags('Upload') // Agrupa os endpoints no Swagger
+@ApiTags('Upload')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('upload')
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
 
+  @Roles(
+    TipoUsuarioEnum.ADMIN,
+    TipoUsuarioEnum.ALUNO,
+    TipoUsuarioEnum.PROFESSOR,
+  )
   @Post('/')
   @ApiOperation({ summary: 'Upload de um arquivo no Supabase Storage' })
   @ApiConsumes('multipart/form-data') // Define que o endpoint recebe arquivos
@@ -33,6 +51,11 @@ export class UploadController {
     return await this.uploadService.upload(file);
   }
 
+  @Roles(
+    TipoUsuarioEnum.ADMIN,
+    TipoUsuarioEnum.ALUNO,
+    TipoUsuarioEnum.PROFESSOR,
+  )
   @Get(':fileName')
   @ApiOperation({ summary: 'Visualiza um arquivo do Supabase Storage' })
   async getFileUrl(@Param('fileName') fileName: string) {
@@ -43,6 +66,11 @@ export class UploadController {
     return { url };
   }
 
+  @Roles(
+    TipoUsuarioEnum.ADMIN,
+    TipoUsuarioEnum.ALUNO,
+    TipoUsuarioEnum.PROFESSOR,
+  )
   @Delete(':fileName')
   @ApiOperation({ summary: 'Exclui um arquivo do Supabase Storage' })
   async deleteFile(@Param('fileName') fileName: string) {
