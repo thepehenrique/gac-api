@@ -112,6 +112,15 @@ export class UsuarioRepository {
       .getMany();
   }
 
+  async getAllProfessorGestor(): Promise<Usuario[]> {
+    return this.repository
+      .createQueryBuilder('item')
+      .where('item.perfil = :perfil', {
+        perfil: TipoUsuarioEnum.PROFESSOR_GESTOR,
+      })
+      .getMany();
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async findOne(conditions: any): Promise<Usuario | null> {
     return this.repository.findOne(conditions);

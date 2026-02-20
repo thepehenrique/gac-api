@@ -34,12 +34,19 @@ export class DominioController {
     TipoUsuarioEnum.ADMIN,
     TipoUsuarioEnum.ALUNO,
     TipoUsuarioEnum.PROFESSOR,
+    TipoUsuarioEnum.PROFESSOR_GESTOR,
   )
   @Get('atividade')
   async getAtividade(): Promise<Atividade[]> {
     return this.dominioService.getAtividade();
   }
 
+  @Roles(
+    TipoUsuarioEnum.ADMIN,
+    TipoUsuarioEnum.ALUNO,
+    TipoUsuarioEnum.PROFESSOR,
+    TipoUsuarioEnum.PROFESSOR_GESTOR,
+  )
   @Get('dimensao')
   async getDimensao(): Promise<Dimensao[]> {
     return this.dominioService.getDimensao();
@@ -54,6 +61,12 @@ export class DominioController {
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
   })
+  @Roles(
+    TipoUsuarioEnum.ADMIN,
+    TipoUsuarioEnum.ALUNO,
+    TipoUsuarioEnum.PROFESSOR,
+    TipoUsuarioEnum.PROFESSOR_GESTOR,
+  )
   @Get('arquivo')
   async getAll(
     @Query() filtros: FiltroArquivoDto,
@@ -70,8 +83,34 @@ export class DominioController {
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
   })
+  @Roles(
+    TipoUsuarioEnum.ADMIN,
+    TipoUsuarioEnum.ALUNO,
+    TipoUsuarioEnum.PROFESSOR,
+    TipoUsuarioEnum.PROFESSOR_GESTOR,
+  )
   @Get('usuario')
   async getAllProfessor(): Promise<Usuario[]> {
     return this.usuarioService.getAllProfessor();
+  }
+
+  @ApiOperation({
+    summary: 'Listagem de todos os professores gestores cadastrados.',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+  })
+  @Roles(
+    TipoUsuarioEnum.ADMIN,
+    TipoUsuarioEnum.ALUNO,
+    TipoUsuarioEnum.PROFESSOR,
+    TipoUsuarioEnum.PROFESSOR_GESTOR,
+  )
+  @Get('usuario/gestor')
+  async getAllProfessorGestor(): Promise<Usuario[]> {
+    return this.usuarioService.getAllProfessorGestor();
   }
 }

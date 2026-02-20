@@ -12,6 +12,7 @@ import { PaginationQueryResponseDto } from 'src/commom/dto/pagination-query-resp
 import { AtualizarUsuarioDto } from '../dtos/atualizar-usuario.dto';
 import { StatusEnum } from 'src/features/dominios/enum/status.enum';
 import { FlagRegistroEnum } from 'src/features/dominios/enum/flag-registro.enum';
+import { TipoUsuarioEnum } from 'src/features/dominios/enum/tipo-usuario.enum';
 
 @Injectable()
 export class UsuarioService {
@@ -105,6 +106,10 @@ export class UsuarioService {
     return this.repository.getAllProfessor();
   }
 
+  async getAllProfessorGestor(): Promise<Usuario[]> {
+    return this.repository.getAllProfessorGestor();
+  }
+
   async toggleStatus(id: number, status: StatusEnum): Promise<Usuario> {
     const entity = await this.getById(id);
     if (!entity) {
@@ -120,15 +125,22 @@ export class UsuarioService {
 
   async toggleGestor(id: number, gestor: FlagRegistroEnum): Promise<Usuario> {
     const entity = await this.getById(id);
+
     if (!entity) {
       throw new NotFoundException('Registro não encontrado.');
     }
+
     entity.gestor = gestor;
+
+    if (gestor === FlagRegistroEnum.SIM) {
+      entity.perfil = TipoUsuarioEnum.PROFESSOR_GESTOR;
+    } else {
+      entity.perfil = TipoUsuarioEnum.PROFESSOR;
+    }
+
     entity.dtAtualizacao = new Date();
 
-    const registro = await this.repository.salvar(entity);
-
-    return registro;
+    return await this.repository.salvar(entity);
   }
 
   async getByEmail(email: string): Promise<Usuario | null> {

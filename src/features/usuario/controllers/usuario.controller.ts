@@ -92,6 +92,7 @@ export class UsuarioController {
     TipoUsuarioEnum.ADMIN,
     TipoUsuarioEnum.ALUNO,
     TipoUsuarioEnum.PROFESSOR,
+    TipoUsuarioEnum.PROFESSOR_GESTOR,
   )
   @Get('/:id')
   async getById(@Param('id', ParseIntPipe) id: number): Promise<Usuario> {
@@ -169,7 +170,11 @@ export class UsuarioController {
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
   })
-  @Roles(TipoUsuarioEnum.ADMIN, TipoUsuarioEnum.PROFESSOR)
+  @Roles(
+    TipoUsuarioEnum.ADMIN,
+    TipoUsuarioEnum.PROFESSOR,
+    TipoUsuarioEnum.PROFESSOR_GESTOR,
+  )
   @Get()
   async getAll(
     @Query() filtros: FiltroUsuarioDto,

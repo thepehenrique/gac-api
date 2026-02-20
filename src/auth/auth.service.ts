@@ -30,6 +30,22 @@ export class AuthService {
     }
 
     const { email } = req.user;
+
+    let usuario = await this.usuarioService.getByEmail(email);
+    let novoUsuario = false;
+
+    if (usuario) {
+      const jwt = await this.validateOAuthLogin(UsuarioDto.fromEntity(usuario));
+
+      return {
+        token: jwt,
+        novoUsuario: false,
+        usuarioId: usuario.id,
+        tipoUsuario: usuario.perfil,
+        gestor: usuario.gestor,
+      };
+    }
+
     let nome: string;
     let tipoUsuario: TipoUsuarioEnum;
     let matricula: string | null = null;
@@ -41,9 +57,6 @@ export class AuthService {
     } else if (email.endsWith('@faeterj-prc.faetec.rj.gov.br')) {
       tipoUsuario = TipoUsuarioEnum.PROFESSOR;
       nome = email.split('.')[0];
-    } else if (email === process.env.EMAIL_TESTE_PROFESSOR) {
-      tipoUsuario = TipoUsuarioEnum.PROFESSOR;
-      nome = email.substring(0, 5);
     } else if (email === process.env.EMAIL_ADMIN) {
       tipoUsuario = TipoUsuarioEnum.ADMIN;
       nome = email.substring(0, 5);
@@ -51,26 +64,22 @@ export class AuthService {
       throw new UnauthorizedException('Domínio do e-mail não autorizado.');
     }
 
-    let usuario = await this.usuarioService.getByEmail(email);
-    let novoUsuario = false;
+    novoUsuario = true;
 
-    if (!usuario) {
-      novoUsuario = true;
+    const usuarioDto = new UsuarioDto({
+      perfil: tipoUsuario,
+      nome,
+      email,
+      matricula,
+      gestor:
+        tipoUsuario === TipoUsuarioEnum.PROFESSOR
+          ? FlagRegistroEnum.NAO
+          : undefined,
+    });
 
-      const usuarioDto = new UsuarioDto({
-        perfil: tipoUsuario,
-        nome,
-        email,
-        matricula,
-        gestor:
-          tipoUsuario === TipoUsuarioEnum.PROFESSOR
-            ? FlagRegistroEnum.NAO
-            : undefined,
-      });
+    await this.usuarioService.salvar(usuarioDto);
 
-      await this.usuarioService.salvar(usuarioDto);
-      usuario = await this.usuarioService.getByEmail(email);
-    }
+    usuario = await this.usuarioService.getByEmail(email);
 
     const jwt = await this.validateOAuthLogin(UsuarioDto.fromEntity(usuario));
 
@@ -79,10 +88,7 @@ export class AuthService {
       novoUsuario,
       usuarioId: usuario.id,
       tipoUsuario: usuario.perfil,
-      gestor:
-        tipoUsuario === TipoUsuarioEnum.PROFESSOR
-          ? FlagRegistroEnum.NAO
-          : undefined,
+      gestor: usuario.gestor,
     };
   }
 }

@@ -144,11 +144,7 @@ export class ArquivoController {
   @ApiOperation({
     summary: 'Aprovar ou Recusar.',
   })
-  @Roles(
-    TipoUsuarioEnum.ADMIN,
-    TipoUsuarioEnum.ALUNO,
-    TipoUsuarioEnum.PROFESSOR,
-  )
+  @Roles(TipoUsuarioEnum.ADMIN, TipoUsuarioEnum.PROFESSOR_GESTOR)
   @Put(':id/situacao')
   async updateArquivo(
     @Param('id', ParseIntPipe) id: number,
@@ -170,6 +166,7 @@ export class ArquivoController {
     TipoUsuarioEnum.ADMIN,
     TipoUsuarioEnum.ALUNO,
     TipoUsuarioEnum.PROFESSOR,
+    TipoUsuarioEnum.PROFESSOR_GESTOR,
   )
   @Get('/:id')
   async getById(@Param('id', ParseIntPipe) id: number): Promise<Arquivo> {
@@ -195,11 +192,7 @@ export class ArquivoController {
   })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST })
   @ApiResponse({ status: HttpStatus.NOT_FOUND })
-  @Roles(
-    TipoUsuarioEnum.ADMIN,
-    TipoUsuarioEnum.ALUNO,
-    TipoUsuarioEnum.PROFESSOR,
-  )
+  @Roles(TipoUsuarioEnum.ADMIN, TipoUsuarioEnum.ALUNO)
   @Delete(':id')
   async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.service.delete(id);
@@ -218,6 +211,7 @@ export class ArquivoController {
     TipoUsuarioEnum.ADMIN,
     TipoUsuarioEnum.ALUNO,
     TipoUsuarioEnum.PROFESSOR,
+    TipoUsuarioEnum.PROFESSOR_GESTOR,
   )
   @Get('/:usuarioId/arquivo')
   async getAll(
@@ -240,6 +234,7 @@ export class ArquivoController {
     TipoUsuarioEnum.ADMIN,
     TipoUsuarioEnum.ALUNO,
     TipoUsuarioEnum.PROFESSOR,
+    TipoUsuarioEnum.PROFESSOR_GESTOR,
   )
   @Get('horas/:usuarioId')
   async getHorasTotais(@Param('usuarioId') usuarioId: number) {
@@ -256,6 +251,7 @@ export class ArquivoController {
     TipoUsuarioEnum.ADMIN,
     TipoUsuarioEnum.ALUNO,
     TipoUsuarioEnum.PROFESSOR,
+    TipoUsuarioEnum.PROFESSOR_GESTOR,
   )
   @Get('horas/dimensao/:usuarioId/:dimensaoId')
   async getHorasPorDimensao(
@@ -274,6 +270,7 @@ export class ArquivoController {
     TipoUsuarioEnum.ADMIN,
     TipoUsuarioEnum.ALUNO,
     TipoUsuarioEnum.PROFESSOR,
+    TipoUsuarioEnum.PROFESSOR_GESTOR,
   )
   @Get('horas/atividade/:usuarioId/:dimensaoId/:atividadeId')
   async getHorasPorAtividade(
@@ -288,6 +285,7 @@ export class ArquivoController {
     TipoUsuarioEnum.ADMIN,
     TipoUsuarioEnum.ALUNO,
     TipoUsuarioEnum.PROFESSOR,
+    TipoUsuarioEnum.PROFESSOR_GESTOR,
   )
   @Get('horas/dimensao/:usuarioId')
   async getHorasPorDimensaoUsuario(
