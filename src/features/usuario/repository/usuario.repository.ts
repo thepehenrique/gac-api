@@ -2,9 +2,6 @@ import { EntityManager, Repository } from 'typeorm';
 import { Usuario } from '../entities/usuario.entity';
 import { FiltroUsuarioDto } from '../dtos/filtro-usuario.dto';
 import { TipoUsuarioEnum } from 'src/features/dominios/enum/tipo-usuario.enum';
-import { TurnoEnum } from '../enum/turno.enum';
-import { CursoEnum } from '../enum/curso.enum';
-import { FlagRegistroEnum } from 'src/features/dominios/enum/flag-registro.enum';
 
 export class UsuarioRepository {
   protected readonly repository: Repository<Usuario>;
@@ -124,5 +121,20 @@ export class UsuarioRepository {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async findOne(conditions: any): Promise<Usuario | null> {
     return this.repository.findOne(conditions);
+  }
+
+  async getByNome(nome: string): Promise<Usuario | null> {
+    return this.repository
+      .createQueryBuilder('item')
+      .where('UPPER(item.nome) = UPPER(:nome)', { nome })
+      .getOne();
+  }
+
+  async existeAdmin(): Promise<boolean> {
+    const count = await this.repository.count({
+      where: { perfil: TipoUsuarioEnum.ADMIN },
+    });
+
+    return count > 0;
   }
 }

@@ -2,9 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+import { UsuarioService } from './features/usuario/services/usuario.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  const usuarioService = app.get(UsuarioService);
+  await usuarioService.criarAdminPadrao();
 
   app.enableCors({
     origin: 'http://localhost:4200',

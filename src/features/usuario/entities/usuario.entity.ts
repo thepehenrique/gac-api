@@ -19,7 +19,7 @@ export class Usuario {
   @Column({ name: 'matricula', nullable: true })
   matricula: string;
 
-  @Column({ name: 'email', nullable: false })
+  @Column({ name: 'email', nullable: true })
   email: string;
 
   @Column({ name: 'turno', nullable: true })
@@ -36,9 +36,6 @@ export class Usuario {
 
   @Column({ name: 'gestor', nullable: true })
   gestor: FlagRegistroEnum;
-
-  /*  @Column({ name: 'tipo_gestor', nullable: true })
-  tipoGestor: TipoGestorEnum; */
 
   @Column({ name: 'dtCadastro', nullable: false })
   dtCadastro: Date;

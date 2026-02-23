@@ -13,6 +13,7 @@ import { AtualizarUsuarioDto } from '../dtos/atualizar-usuario.dto';
 import { StatusEnum } from 'src/features/dominios/enum/status.enum';
 import { FlagRegistroEnum } from 'src/features/dominios/enum/flag-registro.enum';
 import { TipoUsuarioEnum } from 'src/features/dominios/enum/tipo-usuario.enum';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsuarioService {
@@ -20,6 +21,28 @@ export class UsuarioService {
 
   constructor(private readonly dataSource: DataSource) {
     this.repository = new UsuarioRepository(this.dataSource.manager);
+  }
+
+  async criarAdminPadrao() {
+    const adminExistente = await this.repository.getByNome('ADMIN');
+
+    if (adminExistente) {
+      return;
+    }
+
+    const senhaHash = await bcrypt.hash('admin123', 10);
+
+    const admin = new Usuario();
+    admin.nome = 'ADMIN';
+    admin.perfil = TipoUsuarioEnum.ADMIN;
+    admin.senha = senhaHash;
+    admin.status = StatusEnum.ATIVO;
+    admin.dtCadastro = new Date();
+    admin.dtAtualizacao = new Date();
+
+    await this.repository.salvar(admin);
+
+    console.log('ADMIN padrão criado');
   }
 
   async salvar(bodyDto: UsuarioDto): Promise<number> {
@@ -34,16 +57,6 @@ export class UsuarioService {
       );
     }
 
-    /* if (bodyDto.idPerfil === 1) {
-      if (!bodyDto.senha) {
-        throw new BadRequestException('Administradores devem ter uma senha.');
-      }
-
-      const salt = await bcrypt.genSalt(10);
-      registro.senha = await bcrypt.hash(bodyDto.senha, salt);
-    } else {
-      registro.senha = null;
-    } */
     await this.repository.salvar(registro);
 
     return registro.id;
