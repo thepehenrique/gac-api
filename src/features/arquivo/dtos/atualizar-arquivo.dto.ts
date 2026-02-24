@@ -6,42 +6,41 @@ import {
   ValidateIf,
   IsNumber,
   IsBoolean,
+  Min,
 } from 'class-validator';
-import { SituacaoEnum } from '../enum/situacao.enum';
+import { Type } from 'class-transformer';
 import { Arquivo } from '../entities/arquivo.entity';
 
 export class AtualizarArquivoDto {
   @ApiProperty({
-    description: 'status',
+    description: 'Define se o arquivo foi aprovado',
     required: true,
   })
-  @IsNotEmpty()
   @IsBoolean()
   aprovado: boolean;
 
   @ApiProperty({
-    description: 'Observação',
+    description: 'Observação do gestor',
     required: false,
   })
-  @IsOptional()
-  @IsString()
-  @ValidateIf((obj) => obj.situacao === SituacaoEnum.RECUSADO)
+  @ValidateIf((obj) => obj.aprovado === false)
   @IsNotEmpty({
-    message: 'O comentario é obrigatória quando o arquivo é reprovado',
+    message: 'O comentário é obrigatório quando o arquivo é recusado.',
   })
-  comentario: string;
+  @IsString()
+  comentario?: string;
 
   @ApiProperty({
-    description: 'Horas Averbadas',
+    description: 'Horas averbadas pelo gestor',
     required: false,
   })
-  @IsOptional()
+  @ValidateIf((obj) => obj.aprovado === true)
+  @Type(() => Number)
   @IsNumber()
-  @ValidateIf((obj) => obj.situacao === SituacaoEnum.APROVADO)
-  @IsNotEmpty({
-    message: 'O campo horasAverbadas é obrigatório quando o arquivo é aprovado',
+  @Min(1, {
+    message: 'As horas devem ser maiores que zero.',
   })
-  horasAverbadas: number;
+  horasAverbadas?: number;
 
   constructor(init?: Partial<AtualizarArquivoDto>) {
     Object.assign(this, init);
@@ -62,7 +61,8 @@ export class AtualizarArquivoDto {
     entidade.dtAtualizacao = data;
 
     Object.assign(entidade, {
-      ...this,
+      comentario: this.comentario,
+      horasAverbadas: this.horasAverbadas,
     });
 
     return entidade;

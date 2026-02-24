@@ -57,16 +57,7 @@ export class ArquivoService {
     }
 
     if (usuario.perfil !== TipoUsuarioEnum.ALUNO) {
-      throw new BadRequestException('O Usuário não é do Tipo Aluno.');
-    }
-
-    const horasAtualmenteAverbadas =
-      await this.repository.getTotalHorasAverbadas(usuarioId);
-
-    if (horasAtualmenteAverbadas >= this.compTotal) {
-      throw new BadRequestException(
-        'Você já completou as horas complementares, não é permitido adicionar mais arquivos.',
-      );
+      throw new BadRequestException('O usuário não é do tipo aluno.');
     }
 
     const atividade = await this.repository.getAtividadePorId(
@@ -77,30 +68,6 @@ export class ArquivoService {
       throw new BadRequestException('Atividade não encontrada.');
     }
 
-    const totalHorasDimensao =
-      await this.repository.getTotalHorasAverbadasPorDimensao(
-        usuarioId,
-        atividade.dimensao.id,
-      );
-
-    if (totalHorasDimensao + bodyDto.horas > atividade.dimensao.horaTotal) {
-      throw new BadRequestException(
-        `Esta dimensão já atingiu seu limite de horas.`,
-      );
-    }
-
-    const totalHorasAtividade =
-      await this.repository.getHorasAverbadasPorTipoAtividade(
-        usuarioId,
-        bodyDto.atividadeId,
-      );
-
-    if (totalHorasAtividade + bodyDto.horas > atividade.horaTotal) {
-      throw new BadRequestException(
-        `A atividade "${atividade.nome}" já atingiu seu limite de horas.`,
-      );
-    }
-
     const dimensaoAtividade = await this.repository.getDimensaoAtividadeId(
       bodyDto.atividadeId,
       bodyDto.dimensaoId,
@@ -108,27 +75,41 @@ export class ArquivoService {
 
     if (!dimensaoAtividade) {
       throw new BadRequestException(
-        'A dimensão informada não está associada à atividade selecionada.',
+        'A dimensão informada não pertence à atividade.',
       );
     }
 
-    if (bodyDto.dimensaoId !== dimensaoAtividade.dimensaoId) {
+    const dimensaoId = dimensaoAtividade.dimensaoId;
+
+    const totalHorasDimensao =
+      await this.repository.getTotalHorasAverbadasPorDimensao(
+        usuarioId,
+        dimensaoId,
+      );
+
+    if (totalHorasDimensao >= atividade.dimensao.horaTotal) {
       throw new BadRequestException(
-        'A dimensão deve estar de acordo com o tipo de atividade.',
+        'Esta dimensão já atingiu o limite máximo de horas. Não é possível enviar novos arquivos.',
       );
     }
 
-    // ========== Upload do Arquivo ==========
+    // ================= VALIDA HORAS =================
+
+    const horasSolicitadas = Number(bodyDto.horas);
+
+    if (!Number.isFinite(horasSolicitadas) || horasSolicitadas <= 0) {
+      throw new BadRequestException('Quantidade de horas inválida.');
+    }
+
     if (!file || file.mimetype !== 'application/pdf') {
       throw new BadRequestException('Apenas arquivos PDF são permitidos.');
     }
 
-    const supabaseURL = process.env.SUPABASE_URL;
-    const supabaseKEY = process.env.SUPABASE_KEY;
-
-    const supabase = createClient(supabaseURL, supabaseKEY, {
-      auth: { persistSession: false },
-    });
+    const supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_KEY,
+      { auth: { persistSession: false } },
+    );
 
     const sanitizedFilename = slugify(file.originalname, {
       lower: true,
@@ -147,7 +128,7 @@ export class ArquivoService {
       );
     }
 
-    if (existingFiles && existingFiles.length > 0) {
+    if (existingFiles?.length) {
       throw new BadRequestException('Já existe um arquivo com este nome.');
     }
 
@@ -162,97 +143,22 @@ export class ArquivoService {
       throw new Error(`Erro ao fazer upload: ${uploadError.message}`);
     }
 
-    // ========== Salvar no Banco ==========
-    const data = new Date();
+    // ================= SALVAR =================
 
     const registro = new ArquivoDto(bodyDto).asEntity(
       usuarioId,
-      data,
+      new Date(),
       new Arquivo(),
     );
 
-    // Salvando o caminho do arquivo
     registro.caminho_arquivo = uploadData.path;
+    registro.situacao = SituacaoEnum.EM_ANALISE;
+    registro.horasAverbadas = null;
 
-    await this.repository.save(registro);
+    const arquivoSalvo = await this.repository.save(registro);
 
-    return registro.id;
+    return arquivoSalvo.id;
   }
-
-  /* async save(idUsuario: number, bodyDto: ArquivoDto): Promise<number> {
-    const usuario = await this.usuarioRepository.findOne({
-      where: { id: idUsuario, perfil: TipoUsuarioEnum.ALUNO },
-    });
-
-    if (!usuario) {
-      throw new BadRequestException('Usuário não encontrado.');
-    }
-
-    if (usuario.status === StatusEnum.INATIVO) {
-      throw new BadRequestException(
-        'Usuário inativo. Não é permitido adicionar um arquivo.',
-      );
-    }
-
-    if (usuario.idPerfil !== TipoUsuarioEnum.ALUNO) {
-      throw new BadRequestException('O Usuário não é do Tipo Aluno.');
-    }
-
-    const horasAtualmenteAverbadas =
-      await this.repository.getTotalHorasAverbadas(idUsuario);
-
-    if (horasAtualmenteAverbadas >= this.compTotal) {
-      throw new BadRequestException(
-        'Você já completou as horas complementares, não é permitido adicionar mais arquivos.',
-      );
-    }
-
-    // Verificando o limite de horas na dimensão (não pode ultrapassar o limite da dimensão)
-    const atividade = await this.repository.getAtividadeById(
-      bodyDto.idAtividade,
-    );
-
-    if (!atividade) {
-      throw new BadRequestException('Atividade não encontrada.');
-    }
-
-    const totalHorasDimensao =
-      await this.repository.getTotalHorasAverbadasPorDimensao(
-        idUsuario,
-        atividade.dimensao.id,
-      );
-
-    if (totalHorasDimensao + bodyDto.horas > atividade.dimensao.horaTotal) {
-      throw new BadRequestException(
-        `A dimensão "${atividade.dimensao.nome}" já atingiu seu limite de horas.`,
-      );
-    }
-
-    // Verificando o limite de horas da atividade
-    const totalHorasAtividade =
-      await this.repository.getHorasAverbadasPorTipoAtividade(
-        idUsuario,
-        bodyDto.idAtividade,
-      );
-
-    if (totalHorasAtividade + bodyDto.horas > atividade.horaTotal) {
-      throw new BadRequestException(
-        `A atividade "${atividade.nome}" já atingiu seu limite de horas.`,
-      );
-    }
-
-    const data = new Date();
-
-    const registro = new ArquivoDto(bodyDto).asEntity(
-      idUsuario,
-      data,
-      new Arquivo(),
-    );
-
-    await this.repository.save(registro);
-
-    return registro.id;
-  } */
 
   async update(id: number, bodyDto: ArquivoDto): Promise<number> {
     const data = new Date();
@@ -290,92 +196,86 @@ export class ArquivoService {
     id: number,
     bodyDto: AtualizarArquivoDto,
   ): Promise<number> {
-    const data = new Date();
-    const arquivo = await this.getById(id);
+    const arquivo = await this.repository.getArquivoParaAprovacao(id);
 
     if (!arquivo) {
       throw new NotFoundException('Arquivo não encontrado.');
     }
 
-    const horaMaximaAtividade = arquivo.atividade.horaTotal;
-    const horaMaximaDimensao = arquivo.atividade.dimensao.horaTotal;
+    if (arquivo.situacao !== SituacaoEnum.EM_ANALISE) {
+      throw new BadRequestException('Este arquivo já foi analisado.');
+    }
 
-    const horasAtualmenteAverbadas =
-      await this.repository.getTotalHorasAverbadas(arquivo.usuarioId);
+    if (!bodyDto.aprovado) {
+      if (!bodyDto.comentario) {
+        throw new BadRequestException('O comentário é obrigatório ao recusar.');
+      }
 
-    const horasAverbadasPorDimensao =
+      arquivo.situacao = SituacaoEnum.RECUSADO;
+      arquivo.comentario = bodyDto.comentario;
+      arquivo.horasAverbadas = 0;
+      /*       arquivo.dataAprovacao = new Date();
+       */
+      await this.repository.save(arquivo);
+
+      return arquivo.id;
+    }
+
+    const horasAverbadas = Number(bodyDto.horasAverbadas);
+
+    if (!horasAverbadas || horasAverbadas <= 0) {
+      throw new BadRequestException(
+        'Informe uma quantidade válida de horas averbadas.',
+      );
+    }
+
+    const totalHorasAluno = await this.repository.getTotalHorasAverbadas(
+      arquivo.usuarioId,
+    );
+
+    if (totalHorasAluno + horasAverbadas > this.compTotal) {
+      throw new BadRequestException(
+        'Ultrapassa o limite total de horas complementares.',
+      );
+    }
+
+    const totalHorasDimensao =
       await this.repository.getTotalHorasAverbadasPorDimensao(
         arquivo.usuarioId,
         arquivo.atividade.dimensao.id,
       );
 
-    const horasAverbadasPorTipoAtividade =
+    const restanteDimensao =
+      arquivo.atividade.dimensao.horaTotal - totalHorasDimensao;
+
+    if (horasAverbadas > restanteDimensao) {
+      throw new BadRequestException(
+        `A dimensão possui apenas ${restanteDimensao} horas disponíveis.`,
+      );
+    }
+
+    const totalHorasAtividade =
       await this.repository.getHorasAverbadasPorTipoAtividade(
         arquivo.usuarioId,
         arquivo.atividade.id,
       );
 
-    if (bodyDto.aprovado) {
-      arquivo.horasAverbadas = bodyDto.horasAverbadas;
-      arquivo.situacao = SituacaoEnum.APROVADO;
-    } else {
-      arquivo.comentario = bodyDto.comentario;
-      arquivo.situacao = SituacaoEnum.RECUSADO;
-    }
+    const restanteAtividade = arquivo.atividade.horaTotal - totalHorasAtividade;
 
-    if (bodyDto.aprovado && bodyDto.horasAverbadas === undefined) {
+    if (horasAverbadas > restanteAtividade) {
       throw new BadRequestException(
-        'Se aprovado, o campo "horaAverbada" deve ser preenchido.',
+        `A atividade permite apenas ${restanteAtividade} horas restantes.`,
       );
     }
 
-    if (!bodyDto.aprovado && !bodyDto.comentario) {
-      throw new BadRequestException(
-        'Se recusado, o campo "comentario" deve ser preenchido.',
-      );
-    }
+    arquivo.situacao = SituacaoEnum.APROVADO;
+    arquivo.horasAverbadas = horasAverbadas;
+    arquivo.comentario = null;
+    /*     arquivo.dataAprovacao = new Date();
+     */
+    await this.repository.save(arquivo);
 
-    if (
-      horasAverbadasPorDimensao + bodyDto.horasAverbadas >
-      horaMaximaDimensao
-    ) {
-      throw new BadRequestException(
-        `A dimensão permite no máximo ${horaMaximaDimensao} horas. Atualmente, já existem ${horasAverbadasPorDimensao} horas aprovadas.`,
-      );
-    }
-
-    if (bodyDto.horasAverbadas > horaMaximaAtividade) {
-      throw new BadRequestException(
-        `A atividade permite no máximo ${horaMaximaAtividade} horas. Ajuste o valor antes de validar.`,
-      );
-    }
-
-    if (bodyDto.horasAverbadas > arquivo.horas) {
-      throw new BadRequestException(
-        `As horas averbadas não podem ser maior que as horas enviadas pelo aluno.`,
-      );
-    }
-
-    if (
-      horasAverbadasPorTipoAtividade + bodyDto.horasAverbadas >
-      horaMaximaAtividade
-    ) {
-      throw new BadRequestException(
-        `O tipo de atividade permite no máximo ${horaMaximaAtividade} horas. Atualmente, já existem ${horasAverbadasPorTipoAtividade} horas aprovadas.`,
-      );
-    }
-
-    if (horasAtualmenteAverbadas > this.compTotal) {
-      throw new BadRequestException(
-        `A soma das horas averbadas não pode ultrapassar 100 horas. Atualmente, você tem ${horasAtualmenteAverbadas} horas aprovadas.`,
-      );
-    }
-
-    const registro = new ArquivoDto(bodyDto).asEntity(id, data, arquivo);
-
-    await this.repository.save(registro);
-
-    return registro.id;
+    return arquivo.id;
   }
 
   async getAll(
@@ -433,20 +333,6 @@ export class ArquivoService {
     await this.repository.delete(id);
   }
 
-  /*  async delete(id: number): Promise<void> {
-    const registro = await this.getById(id);
-    if (!registro) throw new NotFoundException('Registro não encontrado.');
-
-    try {
-      await this.repository.delete(id);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      throw new BadRequestException(
-        'Ocorreu um erro ao tentar excluir os dados.',
-      );
-    }
-  } */
-
   async getHorasPorTodasDimensoes(usuarioId: number) {
     const dimensoes = await this.repository.getTodasDimensoes();
 
@@ -478,16 +364,13 @@ export class ArquivoService {
   }
 
   async getHorasUsuario(usuarioId: number) {
-    // Obtemos as atividades, dimensões e suas respectivas horas
     const atividades = await this.repository.getHorasPorAtividade(usuarioId);
 
-    // Calculamos o total de horas
     let totalHoras = 0;
     atividades.forEach((atividade) => {
-      totalHoras += atividade.totalHoras; // Soma das horas
+      totalHoras += atividade.totalHoras;
     });
 
-    // Verificamos se o usuário atingiu o limite de 100 horas
     const atingiuLimite = totalHoras >= this.compTotal;
 
     return {
@@ -520,7 +403,6 @@ export class ArquivoService {
       };
     }
 
-    // Agrupa atividades
     const atividadesMap = new Map<number, any>();
 
     for (const arquivo of arquivos) {
@@ -544,7 +426,6 @@ export class ArquivoService {
       atividade.totalHorasAverbadas += horas;
     }
 
-    // Gera lista formatada
     const atividades = Array.from(atividadesMap.values()).map((a) => ({
       atividadeId: a.atividadeId,
       atividadeNome: a.atividadeNome,
@@ -553,7 +434,6 @@ export class ArquivoService {
       horasRestantes: Math.max(0, a.limiteAtividade - a.totalHorasAverbadas),
     }));
 
-    // Calcula totais da dimensão
     const limiteDimensao = arquivos[0].dimensao?.horaTotal ?? 0;
     const totalHorasAverbadas = atividades.reduce(
       (soma, a) => soma + a.totalHorasAverbadas,
@@ -570,9 +450,6 @@ export class ArquivoService {
     };
   }
 
-  /**
-   * 🔹 Consulta horas de uma atividade específica dentro de uma dimensão
-   */
   async getHoras(usuarioId: number, atividadeId: number, dimensaoId: number) {
     const existeDimensao = await this.repository.getDimensaoPorId(dimensaoId);
 
@@ -604,7 +481,6 @@ export class ArquivoService {
       };
     }
 
-    // Agrupa atividades
     const atividadesMap = new Map<number, any>();
 
     for (const arquivo of arquivos) {
@@ -628,7 +504,6 @@ export class ArquivoService {
       atividade.totalHorasAverbadas += horas;
     }
 
-    // Gera lista formatada
     const atividades = Array.from(atividadesMap.values()).map((a) => ({
       atividadeId: a.atividadeId,
       atividadeNome: a.atividadeNome,
@@ -637,7 +512,6 @@ export class ArquivoService {
       horasRestantes: Math.max(0, a.limiteAtividade - a.totalHorasAverbadas),
     }));
 
-    // Calcula totais da dimensão
     const limiteDimensao = arquivos[0].dimensao?.horaTotal ?? 0;
     const totalHorasAverbadas = atividades.reduce(
       (soma, a) => soma + a.totalHorasAverbadas,

@@ -86,7 +86,7 @@ export class ArquivoRepository {
     if (filtros.pageSort && filtros.pageOrder) {
       query.orderBy(filtros.pageSort, filtros.pageOrder);
     } else {
-      query.orderBy('arquivo.dtCadastro', 'DESC');
+      query.orderBy('arquivo.situacao', 'ASC');
     }
     if (filtros.pageSize) {
       const skip = filtros.pageStart * filtros.pageSize;
@@ -223,14 +223,14 @@ export class ArquivoRepository {
   async getTotalHorasAverbadas(usuarioId: number): Promise<number> {
     const result = await this.repository
       .createQueryBuilder('arquivo')
+      .select('COALESCE(SUM(arquivo.horasAverbadas), 0)', 'total')
       .where('arquivo.usuarioId = :usuarioId', { usuarioId })
       .andWhere('arquivo.situacao = :situacao', {
         situacao: SituacaoEnum.APROVADO,
       })
-      .select('SUM(arquivo.horasAverbadas)', 'total')
       .getRawOne();
 
-    return result?.total || 0;
+    return Number(result.total);
   }
 
   async getHorasAverbadasPorTipoAtividade(
@@ -362,5 +362,15 @@ export class ArquivoRepository {
       .andWhere('arquivo.dimensaoId = :dimensaoId', { dimensaoId })
       .andWhere('arquivo.atividadeId = :atividadeId', { atividadeId })
       .getMany();
+  }
+
+  async getArquivoParaAprovacao(id: number): Promise<Arquivo> {
+    return this.repository
+      .createQueryBuilder('arquivo')
+      .leftJoinAndSelect('arquivo.usuario', 'usuario')
+      .leftJoinAndSelect('arquivo.atividade', 'atividade')
+      .leftJoinAndSelect('atividade.dimensao', 'dimensao')
+      .where('arquivo.id = :id', { id })
+      .getOne();
   }
 }
