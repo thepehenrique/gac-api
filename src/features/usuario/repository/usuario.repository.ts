@@ -2,6 +2,7 @@ import { EntityManager, Repository } from 'typeorm';
 import { Usuario } from '../entities/usuario.entity';
 import { FiltroUsuarioDto } from '../dtos/filtro-usuario.dto';
 import { TipoUsuarioEnum } from 'src/features/dominios/enum/tipo-usuario.enum';
+import { Query } from '@nestjs/common';
 
 export class UsuarioRepository {
   protected readonly repository: Repository<Usuario>;
@@ -31,14 +32,9 @@ export class UsuarioRepository {
       });
     }
 
-    // ARRUMAR DEPOIS - GERANDO BUG NO LISTAR POR
-    /* if (filtros.turno) {
+    if (filtros.turno) {
       query.andWhere('item.turno = :turno', {
         turno: filtros.turno,
-      });
-    } else {
-      query.andWhere('item.turno IN (:...turnos)', {
-        turnos: [TurnoEnum.MANHA, TurnoEnum.NOITE],
       });
     }
 
@@ -46,11 +42,7 @@ export class UsuarioRepository {
       query.andWhere('item.curso = :curso', {
         curso: filtros.curso,
       });
-    } else {
-      query.andWhere('item.curso IN (:...cursos)', {
-        cursos: [CursoEnum.ANALISE_DES_SISTEMA, CursoEnum.GESTAO_AMBIENTAL],
-      });
-    } */
+    }
 
     if (filtros.perfil) {
       query.andWhere(`item.perfil = :perfil`, {
@@ -68,6 +60,7 @@ export class UsuarioRepository {
       query.orderBy(filtros.pageSort, filtros.pageOrder);
     } else {
       query.orderBy('item.dtCadastro', 'DESC');
+      query.addOrderBy('item.status');
     }
     if (filtros.pageSize) {
       const skip = filtros.pageStart * filtros.pageSize;
