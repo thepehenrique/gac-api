@@ -2,6 +2,8 @@ import { EntityManager, Repository } from 'typeorm';
 import { Usuario } from '../entities/usuario.entity';
 import { FiltroUsuarioDto } from '../dtos/filtro-usuario.dto';
 import { TipoUsuarioEnum } from 'src/features/dominios/enum/tipo-usuario.enum';
+import { CursoEnum } from '../enum/curso.enum';
+import { TurnoEnum } from '../enum/turno.enum';
 
 export class UsuarioRepository {
   protected readonly repository: Repository<Usuario>;
@@ -31,18 +33,13 @@ export class UsuarioRepository {
       });
     }
 
-    if (filtros.turno) {
-      query.andWhere('item.turno = :turno', {
-        turno: filtros.turno,
-      });
-    }
+    query.andWhere('item.turno IN (:...turnos)', {
+      turnos: filtros.turno ? [filtros.turno] : Object.values(TurnoEnum),
+    });
 
-    if (filtros.curso) {
-      query.andWhere('item.curso = :curso', {
-        curso: filtros.curso,
-      });
-    }
-
+    query.andWhere('item.curso IN (:...cursos)', {
+      cursos: filtros.curso ? [filtros.curso] : Object.values(CursoEnum),
+    });
     if (filtros.perfil) {
       query.andWhere(`item.perfil = :perfil`, {
         perfil: filtros.perfil,
