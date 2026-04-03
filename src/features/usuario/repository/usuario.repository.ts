@@ -2,7 +2,6 @@ import { EntityManager, Repository } from 'typeorm';
 import { Usuario } from '../entities/usuario.entity';
 import { FiltroUsuarioDto } from '../dtos/filtro-usuario.dto';
 import { TipoUsuarioEnum } from 'src/features/dominios/enum/tipo-usuario.enum';
-import { Query } from '@nestjs/common';
 
 export class UsuarioRepository {
   protected readonly repository: Repository<Usuario>;
@@ -21,7 +20,7 @@ export class UsuarioRepository {
     const query = this.repository.createQueryBuilder('item');
 
     if (filtros.nome) {
-      query.andWhere(`item.nome LIKE :nome`, {
+      query.andWhere(`item.nome ILIKE :nome`, {
         nome: `%${filtros.nome}%`,
       });
     }
