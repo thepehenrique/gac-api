@@ -101,6 +101,12 @@ export class ArquivoService {
       throw new BadRequestException('Quantidade de horas inválida.');
     }
 
+    if (horasSolicitadas > atividade.horaTotal) {
+      throw new BadRequestException(
+        'As horas enviadas ultrapassam o limite da atividade.',
+      );
+    }
+
     if (!file || file.mimetype !== 'application/pdf') {
       throw new BadRequestException('Apenas arquivos PDF são permitidos.');
     }
