@@ -50,7 +50,7 @@ export class AuthController {
     const loginResponse = await this.authService.googleLogin(req);
 
     return res.redirect(
-      `http://localhost:4200/login?token=${loginResponse.token}&usuarioId=${loginResponse.usuarioId}&novoUsuario=${loginResponse.novoUsuario}&tipoUsuario=${loginResponse.tipoUsuario}`,
+      `gac-web-beryl.vercel.app/login?token=${loginResponse.token}&usuarioId=${loginResponse.usuarioId}&novoUsuario=${loginResponse.novoUsuario}&tipoUsuario=${loginResponse.tipoUsuario}`,
     );
   }
 
