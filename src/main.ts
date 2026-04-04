@@ -11,7 +11,7 @@ async function bootstrap() {
   await usuarioService.criarAdminPadrao();
 
   app.enableCors({
-    origin: 'gac-web-beryl.vercel.app',
+    origin: ['http://localhost:4200', 'https://gac-web-beryl.vercel.app'],
     credentials: true,
   });
 
