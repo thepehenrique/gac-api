@@ -86,7 +86,7 @@ export class ArquivoRepository {
     if (filtros.pageSort && filtros.pageOrder) {
       query.orderBy(filtros.pageSort, filtros.pageOrder);
     } else {
-      query.orderBy('arquivo.situacao', 'ASC');
+      query.orderBy('arquivo.dtCadastro', 'DESC');
     }
     if (filtros.pageSize) {
       const skip = filtros.pageStart * filtros.pageSize;
