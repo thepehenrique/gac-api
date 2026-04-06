@@ -37,6 +37,12 @@ export class Usuario {
   @Column({ name: 'gestor', nullable: true })
   gestor: FlagRegistroEnum;
 
+  @Column({ name: 'anoIngresso', nullable: true })
+  anoIngresso: number;
+
+  @Column({ name: 'semestreIngresso', nullable: true })
+  semestreIngresso: number;
+
   @Column({ name: 'dtCadastro', nullable: false })
   dtCadastro: Date;
 

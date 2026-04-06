@@ -51,10 +51,12 @@ export class UsuarioService {
 
     const registro = new UsuarioDto(bodyDto).asEntity(data, usuarioEntidade);
 
-    if (bodyDto.matricula && bodyDto.matricula.length !== 13) {
-      throw new BadRequestException(
-        'A matrícula deve ter exatamente 13 caracteres.',
-      );
+    if (
+      bodyDto.matricula &&
+      bodyDto.matricula.length >= 11 &&
+      bodyDto.matricula.length <= 13
+    ) {
+      throw new BadRequestException('Erro.');
     }
 
     await this.repository.salvar(registro);

@@ -13,6 +13,7 @@ import { StatusEnum } from 'src/features/dominios/enum/status.enum';
 import { TipoUsuarioEnum } from 'src/features/dominios/enum/tipo-usuario.enum';
 import { Usuario } from '../entities/usuario.entity';
 import { FlagRegistroEnum } from 'src/features/dominios/enum/flag-registro.enum';
+import { CursoEnum } from '../enum/curso.enum';
 
 export class UsuarioDto {
   @ApiProperty({
@@ -41,13 +42,40 @@ export class UsuarioDto {
 
   @ApiProperty({
     description: 'Número de Matrícula',
-    required: true,
+    required: false,
   })
   @IsString()
-  @Length(13, 13)
-  @IsNotEmpty()
+  @Length(11, 13)
+  @IsOptional()
   @ValidateIf((o) => o.perfil === TipoUsuarioEnum.ALUNO)
   matricula: string;
+
+  @ApiProperty({
+    description: 'Ano de Ingresso',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  @ValidateIf((o) => o.perfil === TipoUsuarioEnum.ALUNO)
+  anoIngresso: string;
+
+  @ApiProperty({
+    description: 'Semestre de Ingresso',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  @ValidateIf((o) => o.perfil === TipoUsuarioEnum.ALUNO)
+  semestreIngresso: string;
+
+  @ApiProperty({
+    description: 'Curso',
+    required: false,
+    enum: CursoEnum,
+  })
+  @IsOptional()
+  @ValidateIf((o) => o.perfil !== TipoUsuarioEnum.ADMIN)
+  curso?: CursoEnum;
 
   @ApiProperty({
     description: 'Email',

@@ -11,6 +11,7 @@ import {
   ValidateIf,
   IsEnum,
   IsNotEmpty,
+  Length,
 } from 'class-validator';
 
 export class AtualizarUsuarioDto {
@@ -22,6 +23,15 @@ export class AtualizarUsuarioDto {
   @MaxLength(100)
   @IsString()
   nome: string;
+
+  @ApiProperty({
+    description: 'Número de Matrícula',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @Length(11, 13)
+  matricula?: string;
 
   @ApiProperty({
     description: 'Turno',

@@ -1,4 +1,5 @@
 export enum CursoEnum {
   GESTAO_AMBIENTAL = 'GEA',
   ANALISE_DES_SISTEMA = 'ADS',
+  SISTEMA_DE_INFORMACAO = 'SDI',
 }
