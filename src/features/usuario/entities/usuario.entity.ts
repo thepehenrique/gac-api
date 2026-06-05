@@ -16,8 +16,8 @@ export class Usuario {
   @Column({ name: 'nome', nullable: false })
   nome: string;
 
-  @Column({ name: 'matricula', nullable: true })
-  matricula: string;
+  @Column({ name: 'matriculaCpf', nullable: true })
+  matriculaCpf: string;
 
   @Column({ name: 'email', nullable: true })
   email: string;

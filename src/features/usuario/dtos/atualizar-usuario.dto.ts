@@ -31,7 +31,7 @@ export class AtualizarUsuarioDto {
   @IsOptional()
   @IsString()
   @Length(11, 13)
-  matricula?: string;
+  matriculaCpf?: string;
 
   @ApiProperty({
     description: 'Turno',

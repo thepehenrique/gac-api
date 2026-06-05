@@ -8,7 +8,6 @@ import { UsuarioRepository } from 'src/features/usuario/repository/usuario.repos
 import { UsuarioService } from 'src/features/usuario/services/usuario.service';
 import * as bcrypt from 'bcrypt';
 import { TrocarSenhaAdminDto } from './dto/trocar-senha-admin.dto';
-import { CursoEnum } from 'src/features/usuario/enum/curso.enum';
 
 @Injectable()
 export class AuthService {
@@ -24,7 +23,7 @@ export class AuthService {
       email: usuario.email,
       nome: usuario.nome,
       tipoUsuario: usuario.perfil,
-      matricula: usuario.matricula,
+      matriculaCpf: usuario.matriculaCpf,
     };
 
     return this.jwtService.sign(payload);
@@ -38,11 +37,9 @@ export class AuthService {
     const { email } = req.user;
 
     let usuario = await this.usuarioService.getByEmail(email);
-    let novoUsuario = false;
 
     if (usuario) {
       const jwt = await this.validateOAuthLogin(UsuarioDto.fromEntity(usuario));
-
       return {
         token: jwt,
         novoUsuario: false,
@@ -52,77 +49,49 @@ export class AuthService {
       };
     }
 
-    let nome: string;
     let tipoUsuario: TipoUsuarioEnum;
-    let matricula: string | null = null;
+    let nome: string;
+    let matriculaCpf: string | null = null;
+    let precisaCompletarCadastro: boolean = false;
 
-    let anoIngresso: string | null = null;
-    let semestre: string | null = null;
-    let cursoEnum: CursoEnum | null = null;
+    const partes = email.split('@')[0].split('.');
 
-    if (email.endsWith('@aluno.faeterj-prc.faetec.rj.gov.br')) {
-      tipoUsuario = TipoUsuarioEnum.ALUNO;
+    if (
+      email.endsWith('@faeterj-prc.faetec.rj.gov.br') &&
+      !email.includes('aluno')
+    ) {
+      tipoUsuario = TipoUsuarioEnum.PROFESSOR;
 
-      const partes = email.split('@')[0].split('.');
-
-      if (partes.length < 2) {
+      if (partes.length !== 2) {
         throw new UnauthorizedException('Formato de e-mail inválido.');
       }
 
       nome = partes[0];
+      matriculaCpf = null;
+      precisaCompletarCadastro = false;
+    } else if (email.endsWith('@aluno.faeterj-prc.faetec.rj.gov.br')) {
+      tipoUsuario = TipoUsuarioEnum.ALUNO;
 
-      if (partes.length === 3) {
-        const codigo = partes[2];
-
-        if (codigo.length < 5) {
-          throw new UnauthorizedException('Código inválido no e-mail.');
-        }
-
-        anoIngresso = codigo.substring(0, 2);
-        semestre = codigo.substring(2, 3);
-        const cursoSigla = codigo.substring(3).toLowerCase();
-
-        if (!['1', '2'].includes(semestre)) {
-          throw new UnauthorizedException('Semestre inválido no e-mail.');
-        }
-
-        const mapaCurso: Record<string, CursoEnum> = {
-          ads: CursoEnum.ANALISE_DES_SISTEMA,
-          si: CursoEnum.SISTEMA_DE_INFORMACAO,
-          ga: CursoEnum.GESTAO_AMBIENTAL,
-        };
-
-        cursoEnum = mapaCurso[cursoSigla];
-
-        if (!cursoEnum) {
-          throw new UnauthorizedException('Curso inválido no e-mail.');
-        }
-
-        matricula = null;
-      } else if (partes.length === 2) {
-        matricula = null;
+      if (partes.length === 2) {
+        nome = partes[0];
+        matriculaCpf = partes[1];
+        precisaCompletarCadastro = false;
+      } else if (partes.length === 3) {
+        nome = partes[0];
+        matriculaCpf = null;
+        precisaCompletarCadastro = true;
       } else {
         throw new UnauthorizedException('Formato de e-mail inválido.');
       }
-    } else if (email.endsWith('@faeterj-prc.faetec.rj.gov.br')) {
-      tipoUsuario = TipoUsuarioEnum.PROFESSOR;
-
-      const partes = email.split('@')[0].split('.');
-      nome = partes[0];
     } else {
       throw new UnauthorizedException('Domínio do e-mail não autorizado.');
     }
-
-    novoUsuario = true;
 
     const usuarioDto = new UsuarioDto({
       perfil: tipoUsuario,
       nome,
       email,
-      matricula: null,
-      anoIngresso: anoIngresso ?? undefined,
-      semestreIngresso: semestre ?? undefined,
-      curso: cursoEnum ?? undefined,
+      matriculaCpf,
       gestor:
         tipoUsuario === TipoUsuarioEnum.PROFESSOR
           ? FlagRegistroEnum.NAO
@@ -137,10 +106,11 @@ export class AuthService {
 
     return {
       token: jwt,
-      novoUsuario,
+      novoUsuario: true,
       usuarioId: usuario.id,
       tipoUsuario: usuario.perfil,
       gestor: usuario.gestor,
+      precisaCompletarCadastro,
     };
   }
 

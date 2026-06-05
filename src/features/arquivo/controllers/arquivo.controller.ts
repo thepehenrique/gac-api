@@ -96,23 +96,6 @@ export class ArquivoController {
     return this.service.save(usuarioId, body, file);
   }
 
-  /* @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-  })
-  @ApiOperation({
-    summary: 'Criação do registro.',
-  })
-  @Post('/:idUsuario')
-  async save(
-    @Param('idUsuario', ParseIntPipe) idUsuario: number,
-    @Body() body: ArquivoDto,
-  ): Promise<number> {
-    return this.service.save(idUsuario, body);
-  } */
-
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
   })
@@ -173,20 +156,6 @@ export class ArquivoController {
     return this.service.getById(id);
   }
 
-  /*  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-  })
-  @ApiOperation({
-    summary: 'Remove o registro pelo Id.',
-  })
-  @Delete('/:id')
-  async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return this.service.delete(id);
-  } */
-
   @ApiOperation({
     summary: 'Remove arquivo (registro + storage) se estiver EM_ANALISE',
   })
@@ -242,11 +211,6 @@ export class ArquivoController {
     return result;
   }
 
-  /**
-   * 🔹 Retorna todas as atividades dentro de uma dimensão, com totais
-   * Exemplo: GET /arquivos/horas/dimensao/1/2
-   * (usuarioId = 1, dimensaoId = 2)
-   */
   @Roles(
     TipoUsuarioEnum.ADMIN,
     TipoUsuarioEnum.ALUNO,
@@ -261,11 +225,6 @@ export class ArquivoController {
     return this.service.getHorasPorDimensaoComTotal(usuarioId, dimensaoId);
   }
 
-  /**
-   * 🔹 Retorna as horas de uma atividade específica dentro de uma dimensão
-   * Exemplo: GET /arquivos/horas/atividade/1/2/5
-   * (usuarioId = 1, dimensaoId = 2, atividadeId = 5)
-   */
   @Roles(
     TipoUsuarioEnum.ADMIN,
     TipoUsuarioEnum.ALUNO,

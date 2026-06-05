@@ -49,8 +49,10 @@ export class AuthController {
   async googleAuthRedirect(@Req() req, @Res() res) {
     const loginResponse = await this.authService.googleLogin(req);
 
+    const authControllerUrl = process.env.PRODUCAO_AUTH_CONTROLLER;
+
     return res.redirect(
-      `https://gac-web-three.vercel.app/login?token=${loginResponse.token}&usuarioId=${loginResponse.usuarioId}&novoUsuario=${loginResponse.novoUsuario}&tipoUsuario=${loginResponse.tipoUsuario}`,
+      `${authControllerUrl}/login?token=${loginResponse.token}&usuarioId=${loginResponse.usuarioId}&novoUsuario=${loginResponse.novoUsuario}&tipoUsuario=${loginResponse.tipoUsuario}`,
     );
   }
 

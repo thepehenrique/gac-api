@@ -27,9 +27,9 @@ export class UsuarioRepository {
       });
     }
 
-    if (filtros.matricula) {
-      query.andWhere(`item.matricula LIKE :matricula`, {
-        matricula: `%${filtros.matricula}%`,
+    if (filtros.matriculaCpf) {
+      query.andWhere(`item.matriculaCpf LIKE :matriculaCpf`, {
+        matriculaCpf: `%${filtros.matriculaCpf}%`,
       });
     }
 

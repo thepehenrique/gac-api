@@ -48,7 +48,7 @@ export class UsuarioDto {
   @Length(11, 13)
   @IsOptional()
   @ValidateIf((o) => o.perfil === TipoUsuarioEnum.ALUNO)
-  matricula: string;
+  matriculaCpf: string;
 
   @ApiProperty({
     description: 'Ano de Ingresso',
@@ -134,7 +134,7 @@ export class UsuarioDto {
       perfil: usuario.perfil,
       nome: usuario.nome,
       email: usuario.email,
-      matricula: usuario.matricula,
+      matriculaCpf: usuario.matriculaCpf,
       gestor: usuario.gestor,
     });
   }

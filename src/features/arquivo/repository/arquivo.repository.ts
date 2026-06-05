@@ -121,7 +121,7 @@ export class ArquivoRepository {
         'usuario.id',
         'usuario.nome',
         'usuario.curso',
-        'usuario.matricula',
+        'usuario.matriculaCpf',
         'atividade.id',
         'atividade.nome',
         'dimensao.id',

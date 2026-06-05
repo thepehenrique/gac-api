@@ -11,7 +11,7 @@ const sortValues = [
   'item.turno',
   'item.curso',
   'item.perfil',
-  'item.matricula',
+  'item.matriculaCpf',
   'item.status',
   'item.dtCadastro',
 ];
@@ -38,7 +38,7 @@ export class FiltroUsuarioDto extends PaginationQueryDto {
   })
   @IsOptional()
   @IsString()
-  matricula: string;
+  matriculaCpf: string;
 
   @ApiProperty({
     description: 'Turno do Aluno',

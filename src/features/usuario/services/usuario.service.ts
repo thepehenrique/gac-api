@@ -52,9 +52,9 @@ export class UsuarioService {
     const registro = new UsuarioDto(bodyDto).asEntity(data, usuarioEntidade);
 
     if (
-      bodyDto.matricula &&
-      bodyDto.matricula.length >= 11 &&
-      bodyDto.matricula.length <= 13
+      bodyDto.matriculaCpf &&
+      bodyDto.matriculaCpf.length !== 11 &&
+      bodyDto.matriculaCpf.length !== 13
     ) {
       throw new BadRequestException('Erro.');
     }
