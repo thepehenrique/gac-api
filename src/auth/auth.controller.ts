@@ -60,7 +60,7 @@ export class AuthController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(TipoUsuarioEnum.ADMIN)
-  trocarSenhaAdmin(@Req() req, @Body() dto: TrocarSenhaAdminDto) {
-    return this.authService.trocarSenhaAdmin(req.user.sub, dto);
+  async trocarSenhaAdmin(@Req() req, @Body() dto: TrocarSenhaAdminDto) {
+    return await this.authService.trocarSenhaAdmin(req.user.sub, dto);
   }
 }
